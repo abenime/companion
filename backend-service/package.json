@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/app.js",
-    "dev": "nodemon"
+    "dev": "nodemon",
+    "test": "node --import ts-node/register/esm src/test_harness.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.11.0",
