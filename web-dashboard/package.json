@@ -1,0 +1,12 @@
+{
+  "name": "wellness-companion-web-dashboard",
+  "version": "1.0.0",
+  "description": "Minimalist Zen-Theme Web Dashboard for the Passive AI Wellness Companion",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
