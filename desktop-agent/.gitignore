@@ -1,0 +1,13 @@
+# Dependency directories
+node_modules/
+
+# Local telemetry buffer cache datastores
+data/telemetry.db
+telemetry_buffer.json
+*.db
+
+# Debug logs
+npm-debug.log*
+
+# Local environment profiles
+.env

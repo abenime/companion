@@ -1,1 +1,8 @@
-node_modules
+# Dependency directories
+node_modules/
+
+# Local server profile configs
+.env
+
+# Logs
+npm-debug.log*

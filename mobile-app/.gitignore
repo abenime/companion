@@ -1,0 +1,32 @@
+# Gradle files
+.gradle/
+build/
+/build/
+/*/build/
+/app/build/
+
+# Local configuration files (contains local Android SDK paths, etc.)
+local.properties
+
+# Signatures and signing files
+*.keystore
+*.jks
+*.pepk
+
+# Log files
+*.log
+
+# Android Studio IDE files
+.navigation/
+captures/
+.externalNativeBuild/
+.cxx/
+.idea/
+*.iml
+.idea/workspace.xml
+.idea/libraries/
+
+# Device/Emulator lock files
+*.apk
+*.apks
+*.aab
