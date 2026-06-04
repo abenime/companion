@@ -1,0 +1,16 @@
+{
+  "name": "wellness-companion-desktop-agent",
+  "version": "1.0.0",
+  "description": "Headless Passive Desktop Telemetry Agent for Cognitive Focus Monitoring",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "active-win": "^7.1.0",
+    "axios": "^1.6.8",
+    "desktop-idle": "^1.1.2",
+    "iohook": "^0.9.3",
+    "nedb": "^1.8.0"
+  }
+}

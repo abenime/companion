@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const wellness_controller_1 = require("../controllers/wellness.controller");
+const auth_middleware_1 = require("../middleware/auth.middleware");
+const router = (0, express_1.Router)();
+router.get('/scores', auth_middleware_1.authenticateJWT, wellness_controller_1.WellnessController.getDailyFeatures);
+router.post('/inference', auth_middleware_1.authenticateJWT, wellness_controller_1.WellnessController.runAIInference);
+router.get('/predictions', auth_middleware_1.authenticateJWT, wellness_controller_1.WellnessController.getPredictionsTimeline);
+exports.default = router;
