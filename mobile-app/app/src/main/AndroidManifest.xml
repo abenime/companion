@@ -71,5 +71,15 @@
             </intent-filter>
         </receiver>
 
+        <!-- Receiver for notification actions like mute -->
+        <receiver
+            android:name=".telemetry.NotificationActionReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="MUTE_2H" />
+            </intent-filter>
+        </receiver>
+
     </application>
 </manifest>

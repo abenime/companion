@@ -320,6 +320,104 @@ function appendChatMessage(sender, text) {
     chatLogs.scrollTop = chatLogs.scrollHeight;
 }
 
+// --- Transparency Tab Switcher & Navigation Functions ---
+function switchTab(tab) {
+    const dashTab = document.getElementById('dashboard-tab');
+    const settTab = document.getElementById('settings-tab');
+    const btnDash = document.getElementById('nav-btn-dashboard');
+    const btnSett = document.getElementById('nav-btn-settings');
+
+    if (tab === 'dashboard') {
+        dashTab.classList.remove('hidden');
+        settTab.classList.add('hidden');
+        btnDash.className = "font-bold tracking-widest text-[#8E9F8E] uppercase pb-1 border-b-2 border-[#8E9F8E] transition-all";
+        btnSett.className = "font-bold tracking-widest text-gray-400 uppercase pb-1 border-b-2 border-transparent hover:text-gray-200 transition-all";
+    } else {
+        dashTab.classList.add('hidden');
+        settTab.classList.remove('hidden');
+        btnDash.className = "font-bold tracking-widest text-gray-400 uppercase pb-1 border-b-2 border-transparent hover:text-gray-200 transition-all";
+        btnSett.className = "font-bold tracking-widest text-[#8E9F8E] uppercase pb-1 border-b-2 border-[#8E9F8E] transition-all";
+        renderWebIgnoreList();
+    }
+}
+
+// --- Ignored Applications Registry Management ---
+let webIgnoredApps = JSON.parse(localStorage.getItem('web_ignored_apps')) || ['com.android.settings', 'com.google.android.apps.authenticator2', 'com.bitwarden.android'];
+
+function renderWebIgnoreList() {
+    const list = document.getElementById('web-ignore-list');
+    list.innerHTML = '';
+    webIgnoredApps.forEach(app => {
+        const li = document.createElement('li');
+        li.className = 'flex justify-between items-center bg-[#12161A] px-3 py-2 rounded-lg border border-gray-800';
+        li.innerHTML = `
+            <span class="text-xs text-gray-300 font-medium">${app}</span>
+            <button class="text-red-400 hover:text-red-300 font-bold" onclick="removeWebIgnoreApp('${app}')">Remove</button>
+        `;
+        list.appendChild(li);
+    });
+}
+
+function addWebIgnoreApp() {
+    const input = document.getElementById('web-ignore-input');
+    const val = input.value.trim();
+    if (val && !webIgnoredApps.includes(val)) {
+        webIgnoredApps.push(val);
+        localStorage.setItem('web_ignored_apps', JSON.stringify(webIgnoredApps));
+        input.value = '';
+        renderWebIgnoreList();
+    }
+}
+
+function removeWebIgnoreApp(app) {
+    webIgnoredApps = webIgnoredApps.filter(x => x !== app);
+    localStorage.setItem('web_ignored_apps', JSON.stringify(webIgnoredApps));
+    renderWebIgnoreList();
+}
+
+// --- Data Retention DB Deletion Handlers ---
+async function deleteWebLogsToday() {
+    if (!authToken) return;
+    if (!confirm("Are you sure you want to delete today's telemetry logs and inferences from the database?")) return;
+
+    try {
+        const response = await fetch(`${BASE_URL}/api/v1/wellness/logs/today`, {
+            method: 'DELETE',
+            headers: { 'Authorization': authToken }
+        });
+        const data = await response.json();
+        if (response.ok) {
+            alert(data.message || "Today's logs cleared successfully");
+            initDashboard();
+        } else {
+            alert(data.error || "Failed to delete today's logs");
+        }
+    } catch (err) {
+        alert("Server unreachable");
+    }
+}
+
+async function purgeWebTelemetryAll() {
+    if (!authToken) return;
+    if (!confirm("WARNING: This will permanently delete ALL of your telemetry history and AI inferences. This cannot be undone. Do you wish to proceed?")) return;
+
+    try {
+        const response = await fetch(`${BASE_URL}/api/v1/wellness/logs/all`, {
+            method: 'DELETE',
+            headers: { 'Authorization': authToken }
+        });
+        const data = await response.json();
+        if (response.ok) {
+            alert(data.message || "All telemetry history purged successfully");
+            initDashboard();
+        } else {
+            alert(data.error || "Failed to purge telemetry history");
+        }
+    } catch (err) {
+        alert("Server unreachable");
+    }
+}
+
 // Initialize on load
 if (authToken) {
     document.getElementById('auth-modal').classList.add('hidden');

@@ -1,9 +1,10 @@
 const activeWin = require('active-win');
 
 class WindowTracker {
-    constructor(callback, intervalMs = 5000) {
+    constructor(callback, intervalMs = 5000, ignoredApps = []) {
         this.callback = callback;
         this.intervalMs = intervalMs;
+        this.ignoredApps = ignoredApps;
         this.timer = null;
         this.lastWindow = null;
     }
@@ -14,9 +15,24 @@ class WindowTracker {
             try {
                 const win = await activeWin();
                 if (win) {
+                    let appName = win.owner.name;
+                    let title = win.title;
+
+                    // Mask sensitive applications under privacy ignore list
+                    const isIgnored = this.ignoredApps.some(ignored => {
+                        const term = ignored.trim().toLowerCase();
+                        if (!term) return false;
+                        return appName.toLowerCase().includes(term) || title.toLowerCase().includes(term);
+                    });
+
+                    if (isIgnored) {
+                        appName = 'Ignored Workspace';
+                        title = 'Ignored Workspace';
+                    }
+
                     const currentWindowPayload = {
-                        title: win.title,
-                        appName: win.owner.name,
+                        title: title,
+                        appName: appName,
                         processId: win.owner.processId,
                         timestamp: Date.now()
                     };

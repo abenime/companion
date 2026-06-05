@@ -17,5 +17,8 @@ module.exports = {
     IDLE_THRESHOLD_MS: 300000,
     
     // How often to flush and batch sync metrics to backend (milliseconds - defaults to 1 minute)
-    SYNC_INTERVAL_MS: 60000
+    SYNC_INTERVAL_MS: 60000,
+
+    // Sensitive applications ignored by telemetry tracking
+    IGNORED_APPS: (process.env.WELLNESS_IGNORED_APPS || 'Bitwarden,1Password,KeePass,Keychain,Password Manager').split(',')
 };

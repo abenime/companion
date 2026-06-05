@@ -157,4 +157,77 @@ export class WellnessController {
             res.status(500).json({ error: 'Internal server error' });
         }
     }
+
+    public static async deleteTodayLogs(req: any, res: Response): Promise<void> {
+        const userId = req.userId;
+        const db = DatabaseConnection.getInstance();
+        const client = await db.getClient();
+
+        try {
+            await client.query('BEGIN');
+
+            const deleteSignals = `
+                DELETE FROM raw_signals 
+                WHERE user_id = $1 AND timestamp::date = CURRENT_DATE
+            `;
+            const signalsRes = await client.query(deleteSignals, [userId]);
+
+            const deleteFeatures = `
+                DELETE FROM daily_features 
+                WHERE user_id = $1 AND measured_date = CURRENT_DATE
+            `;
+            await client.query(deleteFeatures, [userId]);
+
+            const deleteInferences = `
+                DELETE FROM ai_inferences 
+                WHERE user_id = $1 AND inference_date = CURRENT_DATE
+            `;
+            await client.query(deleteInferences, [userId]);
+
+            await client.query('COMMIT');
+
+            res.status(200).json({
+                message: "Today's logs and inferences deleted successfully from database",
+                deleted_signals_count: signalsRes.rowCount || 0
+            });
+        } catch (error: any) {
+            await client.query('ROLLBACK');
+            console.error('Delete today logs error:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        } finally {
+            client.release();
+        }
+    }
+
+    public static async purgeAllLogs(req: any, res: Response): Promise<void> {
+        const userId = req.userId;
+        const db = DatabaseConnection.getInstance();
+        const client = await db.getClient();
+
+        try {
+            await client.query('BEGIN');
+
+            const deleteSignals = `DELETE FROM raw_signals WHERE user_id = $1`;
+            const signalsRes = await client.query(deleteSignals, [userId]);
+
+            const deleteFeatures = `DELETE FROM daily_features WHERE user_id = $1`;
+            await client.query(deleteFeatures, [userId]);
+
+            const deleteInferences = `DELETE FROM ai_inferences WHERE user_id = $1`;
+            await client.query(deleteInferences, [userId]);
+
+            await client.query('COMMIT');
+
+            res.status(200).json({
+                message: 'All of your telemetry history and AI analyses have been permanently purged from database',
+                deleted_signals_count: signalsRes.rowCount || 0
+            });
+        } catch (error: any) {
+            await client.query('ROLLBACK');
+            console.error('Purge all logs error:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        } finally {
+            client.release();
+        }
+    }
 }

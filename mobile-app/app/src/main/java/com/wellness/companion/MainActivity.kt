@@ -20,8 +20,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Load saved privacy and theme settings
+        viewModel.loadSettings(this)
+
         // Passively spawn persistent foreground service loop
         startTelemetryService()
+
+        // Intercept incoming notifications starting breath session
+        handleIntent(intent)
 
         setContent {
             // Apply dynamic consistent theme based on client-side state
@@ -53,5 +59,16 @@ class MainActivity : ComponentActivity() {
     private fun startTelemetryService() {
         val intent = Intent(this, TelemetryService::class.java)
         startForegroundService(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        if (intent?.action == "START_BREATH" || intent?.getStringExtra("action") == "START_BREATH") {
+            viewModel.activeIntervention = "breathing"
+        }
     }
 }

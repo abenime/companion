@@ -43,7 +43,7 @@ const windowTracker = new WindowTracker((event, winPayload) => {
         // Increment continuous attention duration
         currentContext.active_window_time_seconds += (config.WINDOW_POLL_INTERVAL_MS / 1000);
     }
-}, config.WINDOW_POLL_INTERVAL_MS);
+}, config.WINDOW_POLL_INTERVAL_MS, config.IGNORED_APPS);
 
 // Flush the currently active foreground application state into a structural database row
 function flushCurrentAppContext() {

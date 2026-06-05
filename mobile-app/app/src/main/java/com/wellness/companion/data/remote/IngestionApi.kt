@@ -5,6 +5,7 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.PATCH
+import retrofit2.http.DELETE
 import retrofit2.http.Query
 
 // Retrofit Endpoint Specifications
@@ -47,6 +48,16 @@ interface IngestionApi {
     suspend fun getPredictionsTimeline(
         @Header("Authorization") token: String
     ): TimelineResponse
+
+    @DELETE("api/v1/wellness/logs/today")
+    suspend fun deleteTodayLogs(
+        @Header("Authorization") token: String
+    ): SimpleResponse
+
+    @DELETE("api/v1/wellness/logs/all")
+    suspend fun purgeAllLogs(
+        @Header("Authorization") token: String
+    ): SimpleResponse
 }
 
 // Request & Response DTOs
@@ -104,6 +115,7 @@ data class MobileTelemetryPayload(
     val unlock_count: Int,
     val steps: Int,
     val sleep_hours: Double,
+    val heart_rate: Double,
     val app_usage: List<AppUsageDto>
 )
 

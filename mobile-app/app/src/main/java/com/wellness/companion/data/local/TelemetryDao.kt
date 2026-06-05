@@ -14,4 +14,10 @@ interface TelemetryDao {
 
     @Query("DELETE FROM local_telemetry_buffer WHERE id IN (:ids)")
     suspend fun clearSyncedBatch(ids: List<Long>)
+
+    @Query("DELETE FROM local_telemetry_buffer WHERE timestamp >= :startOfDayTimestamp")
+    suspend fun deleteTodayRawSignals(startOfDayTimestamp: Long)
+
+    @Query("DELETE FROM local_telemetry_buffer")
+    suspend fun clearAllRawSignals()
 }

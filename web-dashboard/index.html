@@ -93,9 +93,16 @@
 
     <!-- Main Navigation Bar -->
     <nav class="border-b border-gray-800 bg-[#1C2229] px-8 py-4 flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-            <div class="w-8 h-8 rounded-full bg-[#8E9F8E] flex items-center justify-center font-bold text-[#12161A]">C</div>
-            <span class="text-lg font-bold tracking-wider text-[#8E9F8E]">COMPANION</span>
+        <div class="flex items-center space-x-6">
+            <div class="flex items-center space-x-3 mr-6">
+                <div class="w-8 h-8 rounded-full bg-[#8E9F8E] flex items-center justify-center font-bold text-[#12161A]">C</div>
+                <span class="text-lg font-bold tracking-wider text-[#8E9F8E]">COMPANION</span>
+            </div>
+            <!-- Sub tabs navigation -->
+            <div class="flex items-center space-x-6 text-xs">
+                <button id="nav-btn-dashboard" class="font-bold tracking-widest text-[#8E9F8E] uppercase pb-1 border-b-2 border-[#8E9F8E] transition-all" onclick="switchTab('dashboard')">DASHBOARD</button>
+                <button id="nav-btn-settings" class="font-bold tracking-widest text-gray-400 uppercase pb-1 border-b-2 border-transparent hover:text-gray-200 transition-all" onclick="switchTab('settings')">TRANSPARENCY & PRIVACY</button>
+            </div>
         </div>
         <div class="flex items-center space-x-6 text-sm">
             <span id="nav-user-name" class="font-medium text-gray-300">Loading User...</span>
@@ -104,7 +111,7 @@
     </nav>
 
     <!-- Main Dashboard Body Grid -->
-    <main class="max-w-7xl mx-auto p-8 grid grid-cols-3 gap-8">
+    <main id="dashboard-tab" class="max-w-7xl mx-auto p-8 grid grid-cols-3 gap-8">
         
         <!-- Column 1 & 2: Primary Scores & Graphs -->
         <div class="col-span-2 space-y-8">
@@ -232,6 +239,58 @@
 
         </div>
 
+    </main>
+
+    <!-- Settings and Privacy Tab Section -->
+    <main id="settings-tab" class="hidden max-w-4xl mx-auto p-8 space-y-8">
+        <div class="bg-[#1C2229] rounded-2xl p-6 border border-gray-800 space-y-2">
+            <h1 class="text-2xl font-bold">TRANSPARENCY & PRIVACY CENTER</h1>
+            <p class="text-sm text-gray-400 font-medium">Manage on-device telemetry collectors, ignored sensitive application registers, and personal database logs.</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-8">
+            <!-- Telemetry switches card -->
+            <div class="bg-[#1C2229] border border-gray-800 p-6 rounded-2xl space-y-4">
+                <h3 class="text-sm font-semibold uppercase tracking-wider text-[#8E9F8E]">TELEMETRY CONTROLS</h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center pb-2 border-b border-gray-800/50">
+                        <span class="text-sm text-gray-300 font-medium">Keyboard Cadence Latencies</span>
+                        <input type="checkbox" id="web-keyboard-toggle" checked class="accent-[#8E9F8E] w-4 h-4 cursor-pointer">
+                    </div>
+                    <div class="flex justify-between items-center pb-2 border-b border-gray-800/50">
+                        <span class="text-sm text-gray-300 font-medium">Active Application Tracking</span>
+                        <input type="checkbox" id="web-app-toggle" checked class="accent-[#8E9F8E] w-4 h-4 cursor-pointer">
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-300 font-medium">Wearable Health Connect Sync</span>
+                        <input type="checkbox" id="web-sleep-toggle" checked class="accent-[#8E9F8E] w-4 h-4 cursor-pointer">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registry lists card -->
+            <div class="bg-[#1C2229] border border-gray-800 p-6 rounded-2xl space-y-4">
+                <h3 class="text-sm font-semibold uppercase tracking-wider text-[#8E9F8E]">IGNORED APPLICATIONS REGISTRY</h3>
+                <div class="space-y-4 text-xs">
+                    <div class="flex space-x-2">
+                        <input type="text" id="web-ignore-input" placeholder="e.g. com.bitwarden.android" class="flex-1 bg-[#12161A] border border-gray-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#8E9F8E] transition-all">
+                        <button class="bg-[#8E9F8E] text-[#12161A] font-bold px-4 py-2 rounded-lg text-xs hover:bg-[#7D8F7D] transition-all" onclick="addWebIgnoreApp()">ADD APP</button>
+                    </div>
+                    <ul id="web-ignore-list" class="space-y-2 max-h-32 overflow-y-auto">
+                        <!-- Loaded dynamically -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Retention card -->
+        <div class="bg-[#1C2229] border border-gray-800 p-6 rounded-2xl space-y-4 max-w-xl">
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-red-400">DATA RETENTION CONTROL</h3>
+            <div class="space-y-3">
+                <button class="w-full bg-[#D17E73]/10 hover:bg-[#D17E73]/20 text-[#D17E73] font-bold py-3 rounded-lg text-xs tracking-wider uppercase transition-all" onclick="deleteWebLogsToday()">Delete Today's Logs</button>
+                <button class="w-full bg-[#D17E73] hover:bg-[#C06D62] text-white font-bold py-3 rounded-lg text-xs tracking-wider uppercase transition-all shadow-lg" onclick="purgeWebTelemetryAll()">Purge All Telemetry</button>
+            </div>
+        </div>
     </main>
 
     <!-- App Script orchestration file -->

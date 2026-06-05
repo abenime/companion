@@ -5,7 +5,7 @@ export class SignalController {
 
     public static async ingestMobile(req: any, res: Response): Promise<void> {
         const userId = req.userId;
-        const { timestamp, screen_time_mins, unlock_count, steps, sleep_hours, app_usage } = req.body;
+        const { timestamp, screen_time_mins, unlock_count, steps, sleep_hours, heart_rate, app_usage } = req.body;
 
         if (!timestamp) {
             res.status(400).json({ error: 'Missing timestamp parameter in mobile payload' });
@@ -36,6 +36,9 @@ export class SignalController {
             }
             if (sleep_hours !== undefined) {
                 await client.query(insertSignal, [userId, 'sleep', sleep_hours, date]);
+            }
+            if (heart_rate !== undefined) {
+                await client.query(insertSignal, [userId, 'heart_rate', heart_rate, date]);
             }
 
             // Categorized App Usages
