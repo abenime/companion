@@ -236,7 +236,7 @@ class DashboardViewModel : ViewModel() {
                 onResult(response.inference)
                 fetchDashboardData() // Refresh analytics
             } catch (e: Exception) {
-                console.error("AI inference trigger failed:", e.message)
+                android.util.Log.e("DashboardViewModel", "AI inference trigger failed: ${e.message}")
             }
         }
     }

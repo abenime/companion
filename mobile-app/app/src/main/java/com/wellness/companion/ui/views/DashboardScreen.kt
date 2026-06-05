@@ -615,10 +615,10 @@ fun SettingsScreen(viewModel: DashboardViewModel) {
                                 Toast.makeText(context, "Today's logs cleared successfully", Toast.LENGTH_SHORT).show()
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color("#D17E73").copy(alpha = 0.15f)),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD17E73).copy(alpha = 0.15f)),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Delete Today's Logs", color = Color("#D17E73"))
+                        Text("Delete Today's Logs", color = Color(0xFFD17E73))
                     }
                     Button(
                         onClick = {
@@ -626,7 +626,7 @@ fun SettingsScreen(viewModel: DashboardViewModel) {
                                 Toast.makeText(context, "All telemetry permanently purged", Toast.LENGTH_SHORT).show()
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color("#D17E73")),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD17E73)),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("Purge All Telemetry", color = Color.White)
@@ -769,46 +769,9 @@ fun ChatCompanionOverlay(viewModel: DashboardViewModel, onDismiss: () -> Unit) {
                       Icon(imageVector = Icons.Default.Send, contentDescription = "Send Message", tint = Color.White)
                   }
               }
-          }
-      }
-  }
-
-        item {
-            Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("TELEMETRY CONTROLS", fontWeight = FontWeight.Bold, color = Color.Gray)
-                    
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Text("Keyboard Cadence Latencies")
-                        Switch(checked = keyboardToggle, onCheckedChange = { keyboardToggle = it })
-                    }
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Text("Active Window App Tracking")
-                        Switch(checked = activeAppToggle, onCheckedChange = { activeAppToggle = it })
-                    }
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Text("Wearable Health Connect Sync")
-                        Switch(checked = sleepToggle, onCheckedChange = { sleepToggle = it })
-                    }
-                }
-            }
-        }
-
-        item {
-            Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("DATA RETENTION CONTROL", fontWeight = FontWeight.Bold, color = Color.Gray)
-                    Button(onClick = { /* Delete today */ }, colors = ButtonDefaults.buttonColors(containerColor = Color("#D17E73").copy(alpha = 0.15f)), modifier = Modifier.fillMaxWidth()) {
-                        Text("Delete Today's Logs", color = Color("#D17E73"))
-                    }
-                    Button(onClick = { /* Purge all */ }, colors = ButtonDefaults.buttonColors(containerColor = Color("#D17E73")), modifier = Modifier.fillMaxWidth()) {
-                        Text("Purge All Telemetry", color = Color.White)
-                    }
-                }
             }
         }
     }
-}
 
 // -----------------------------------------------------------------
 // 6. SIDE NAVIGATION DRAWER (USER PROFILE & CLIENT PREFERENCES)

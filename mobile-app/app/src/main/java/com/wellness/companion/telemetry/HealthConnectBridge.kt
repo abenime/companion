@@ -2,6 +2,7 @@ package com.wellness.companion.telemetry
 
 import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
@@ -34,9 +35,9 @@ class HealthConnectBridge(private val context: Context) {
 
     private suspend fun checkPermissions(client: HealthConnectClient): Boolean {
         val permissions = setOf(
-            StepsRecord::class,
-            SleepSessionRecord::class,
-            HeartRateRecord::class
+            HealthPermission.getReadPermission(StepsRecord::class),
+            HealthPermission.getReadPermission(SleepSessionRecord::class),
+            HealthPermission.getReadPermission(HeartRateRecord::class)
         )
         val granted = client.permissionController.getGrantedPermissions()
         return granted.containsAll(permissions)
