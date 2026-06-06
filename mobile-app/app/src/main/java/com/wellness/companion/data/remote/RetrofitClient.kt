@@ -7,8 +7,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    // Falls back to standard localhost emulator gateway (10.0.2.2 points to host's localhost in Android emulator)
-    private const val BASE_URL = "http://10.0.2.2:3000/"
+    // Points to the host's local IP on Wi-Fi (172.16.156.202) so a physical phone on the same network can connect.
+    // If using an emulator or USB debugging with 'adb reverse tcp:3000 tcp:3000', you can use "http://localhost:3000/" instead.
+    private const val BASE_URL = "http://172.16.156.202:3000/"
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY

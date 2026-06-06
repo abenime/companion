@@ -7,4 +7,6 @@ const router = (0, express_1.Router)();
 router.get('/scores', auth_middleware_1.authenticateJWT, wellness_controller_1.WellnessController.getDailyFeatures);
 router.post('/inference', auth_middleware_1.authenticateJWT, wellness_controller_1.WellnessController.runAIInference);
 router.get('/predictions', auth_middleware_1.authenticateJWT, wellness_controller_1.WellnessController.getPredictionsTimeline);
+router.delete('/logs/today', auth_middleware_1.authenticateJWT, wellness_controller_1.WellnessController.deleteTodayLogs);
+router.delete('/logs/all', auth_middleware_1.authenticateJWT, wellness_controller_1.WellnessController.purgeAllLogs);
 exports.default = router;
