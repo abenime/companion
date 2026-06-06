@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = 'https://companion-bfmp.onrender.com';
 
 let authToken = localStorage.getItem('auth_token') || null;
 let currentUser = null;
