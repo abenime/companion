@@ -17,6 +17,14 @@ data class ChatMessage(
     val timestamp: Long = System.currentTimeMillis()
 )
 
+data class NotificationItem(
+    val id: String,
+    val title: String,
+    val message: String,
+    val timestamp: String,
+    val isRead: Boolean = false
+)
+
 sealed interface OnboardingUiState {
     object Idle : OnboardingUiState
     object Loading : OnboardingUiState
@@ -150,6 +158,24 @@ class DashboardViewModel : ViewModel() {
     // --- Conversational Chat Messages ---
     var chatMessages = mutableStateListOf<ChatMessage>()
         private set
+
+    var notifications = mutableStateListOf<NotificationItem>(
+        NotificationItem("1", "High Burnout Risk Alert", "Your 7-day burnout risk projection has escalated to 78% due to high context swapping.", "10 mins ago"),
+        NotificationItem("2", "Sleep Deficit Warning", "You logged a 37.5% sleep deficit compared to your baseline. Conserving cognitive load early in the morning.", "1 hour ago"),
+        NotificationItem("3", "Meditation Reminder", "Time for your 2-minute physiological sigh breathing session to reduce stress density.", "3 hours ago"),
+        NotificationItem("4", "Step Deficit Flagged", "You are currently 4,500 steps behind your typical 8,000 daily steps baseline.", "Yesterday")
+    )
+        private set
+
+    fun markAllNotificationsRead() {
+        val updated = notifications.map { it.copy(isRead = true) }
+        notifications.clear()
+        notifications.addAll(updated)
+    }
+
+    fun clearAllNotifications() {
+        notifications.clear()
+    }
 
     var activeIntervention by mutableStateOf<String?>(null)
 
