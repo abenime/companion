@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Companion Hackathon Pitch Deck</title>
+  <style>
+    :root {
+      --ink: #f3f6f0;
+      --muted: #aeb7ad;
+      --subtle: #748074;
+      --bg: #101417;
+      --panel: #182025;
+      --panel-2: #202b31;
+      --line: rgba(255, 255, 255, 0.12);
+      --sage: #8e9f8e;
+      --sage-2: #c5d2bd;
+      --amber: #d9b48f;
+      --terracotta: #d17e73;
+      --cyan: #7eb7c7;
+      --violet: #b79adb;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    body {
+      overflow: hidden;
+    }
+
+    .deck {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      background:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 42px 42px,
+        linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px) 0 0 / 42px 42px,
+        linear-gradient(135deg, #101417 0%, #141a1d 52%, #0f1518 100%);
+    }
+
+    .slides {
+      height: 100%;
+      display: flex;
+      transition: transform 420ms cubic-bezier(.2, .85, .2, 1);
+    }
+
+    .slide {
+      min-width: 100vw;
+      height: 100vh;
+      padding: clamp(28px, 5vw, 72px);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide::before {
+      content: "";
+      position: absolute;
+      inset: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      pointer-events: none;
+    }
+
+    .topbar, .footer {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--sage-2);
+    }
+
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #111715;
+      background: var(--sage);
+      font-weight: 900;
+      box-shadow: 0 0 28px rgba(142, 159, 142, 0.34);
+    }
+
+    .content {
+      position: relative;
+      z-index: 2;
+      align-self: center;
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    h1 {
+      font-size: clamp(58px, 9vw, 132px);
+      line-height: 0.92;
+      font-weight: 860;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      font-size: clamp(40px, 6vw, 82px);
+      line-height: 0.98;
+      font-weight: 820;
+      max-width: 980px;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      font-size: clamp(18px, 2.2vw, 30px);
+      line-height: 1.12;
+      font-weight: 780;
+      color: var(--ink);
+    }
+
+    .eyebrow {
+      color: var(--sage);
+      font-size: 14px;
+      font-weight: 850;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: clamp(22px, 2.5vw, 34px);
+      line-height: 1.22;
+      max-width: 870px;
+      margin-top: 26px;
+    }
+
+    .quote {
+      margin-top: 34px;
+      color: var(--amber);
+      font-size: clamp(22px, 2.6vw, 38px);
+      line-height: 1.18;
+      max-width: 760px;
+      font-weight: 760;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: clamp(28px, 5vw, 68px);
+      align-items: center;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-top: 36px;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(32, 43, 49, 0.94), rgba(24, 32, 37, 0.94));
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 22px;
+    }
+
+    .metric {
+      font-size: 44px;
+      font-weight: 860;
+      color: var(--sage-2);
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.48;
+    }
+
+    .list {
+      display: grid;
+      gap: 18px;
+      margin-top: 30px;
+    }
+
+    .list-row {
+      display: grid;
+      grid-template-columns: 46px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .dot {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: #111715;
+      background: var(--sage);
+    }
+
+    .dot.amber { background: var(--amber); }
+    .dot.terracotta { background: var(--terracotta); }
+    .dot.cyan { background: var(--cyan); }
+    .dot.violet { background: var(--violet); }
+
+    .orbital {
+      width: min(430px, 70vw);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      position: relative;
+      margin: 0 auto;
+      display: grid;
+      place-items: center;
+    }
+
+    .ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 4px solid rgba(142, 159, 142, 0.58);
+      animation: pulse 5.5s ease-in-out infinite;
+    }
+
+    .ring:nth-child(1) { inset: 4%; border-color: rgba(126, 183, 199, 0.46); animation-delay: -1s; }
+    .ring:nth-child(2) { inset: 18%; border-color: rgba(217, 180, 143, 0.48); animation-delay: -2s; }
+    .ring:nth-child(3) { inset: 32%; border-color: rgba(142, 159, 142, 0.74); animation-delay: -3s; }
+
+    .core {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: var(--sage);
+      color: #111715;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: 34px;
+      box-shadow: 0 0 70px rgba(142, 159, 142, 0.55);
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(0.98); opacity: 0.66; }
+      50% { transform: scale(1.04); opacity: 1; }
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      align-items: stretch;
+      margin-top: 38px;
+    }
+
+    .flow .step {
+      min-height: 150px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.045);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .flow .step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: -12px;
+      top: 50%;
+      width: 12px;
+      border-top: 2px solid rgba(142, 159, 142, 0.55);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      border: 1px solid rgba(142, 159, 142, 0.35);
+      color: var(--sage-2);
+      background: rgba(142, 159, 142, 0.08);
+      padding: 7px 11px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .chart {
+      height: 240px;
+      position: relative;
+      border-left: 1px solid rgba(255, 255, 255, 0.14);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+      background:
+        linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px) 0 0 / 100% 25%;
+      margin-top: 30px;
+    }
+
+    .chart svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .phone {
+      width: min(330px, 80vw);
+      min-height: 570px;
+      border-radius: 34px;
+      border: 10px solid #080b0d;
+      background: #12161a;
+      box-shadow: var(--shadow);
+      padding: 22px;
+      margin: 0 auto;
+    }
+
+    .phone-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--sage-2);
+      font-size: 12px;
+      font-weight: 850;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+
+    .mini-orbit {
+      width: 154px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 5px solid rgba(142, 159, 142, 0.65);
+      margin: 18px auto;
+      box-shadow: inset 0 0 0 28px rgba(142, 159, 142, 0.08), 0 0 42px rgba(142, 159, 142, 0.22);
+      display: grid;
+      place-items: center;
+      color: var(--sage);
+      font-size: 30px;
+      font-weight: 900;
+    }
+
+    .score-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 22px 0;
+    }
+
+    .score {
+      background: #1c2229;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 14px;
+    }
+
+    .score b {
+      display: block;
+      color: var(--ink);
+      font-size: 28px;
+      line-height: 1;
+      margin-top: 8px;
+    }
+
+    .privacy-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 34px;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 32px;
+    }
+
+    .feature {
+      min-height: 148px;
+      padding: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.046);
+    }
+
+    .feature strong {
+      display: block;
+      font-size: 18px;
+      margin: 10px 0 8px;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .pill {
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--muted);
+      padding: 10px 13px;
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .pricing {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 34px;
+    }
+
+    .price-card {
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.045);
+      padding: 24px;
+      min-height: 235px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .price {
+      color: var(--sage-2);
+      font-size: 38px;
+      font-weight: 860;
+      margin: 10px 0;
+    }
+
+    .demo-strip {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 14px;
+      margin-top: 34px;
+    }
+
+    .demo-step {
+      min-height: 250px;
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .demo-num {
+      color: var(--sage-2);
+      font-size: 46px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .notes {
+      display: none;
+    }
+
+    .controls {
+      position: fixed;
+      z-index: 20;
+      right: 24px;
+      bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .control-button {
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--ink);
+      background: rgba(24, 32, 37, 0.88);
+      padding: 11px 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .progress {
+      position: fixed;
+      z-index: 21;
+      left: 0;
+      bottom: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--sage), var(--amber), var(--terracotta), var(--cyan));
+      width: 10%;
+      transition: width 300ms ease;
+    }
+
+    .kbd {
+      position: fixed;
+      left: 24px;
+      bottom: 18px;
+      color: var(--subtle);
+      font-size: 12px;
+      z-index: 20;
+    }
+
+    @media (max-width: 900px) {
+      body { overflow: auto; }
+      .deck, .slide { min-height: 100vh; height: auto; }
+      .slides { display: block; transform: none !important; }
+      .slide { min-width: 100%; padding: 28px; border-bottom: 1px solid rgba(255,255,255,.1); }
+      .slide::before, .controls, .progress, .kbd { display: none; }
+      .grid-2, .grid-3, .flow, .privacy-grid, .feature-grid, .pricing, .demo-strip {
+        grid-template-columns: 1fr;
+      }
+      .flow .step:not(:last-child)::after { display: none; }
+      .phone { min-height: auto; }
+    }
+
+    @media print {
+      @page { size: 16in 9in; margin: 0; }
+      body { overflow: visible; background: #101417; }
+      .deck { height: auto; background: #101417; }
+      .slides { display: block; transform: none !important; }
+      .slide {
+        width: 16in;
+        height: 9in;
+        min-width: 16in;
+        page-break-after: always;
+        break-after: page;
+        overflow: hidden;
+      }
+      .controls, .progress, .kbd { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck" aria-label="Companion hackathon pitch deck">
+    <section class="slides" id="slides">
+      <article class="slide">
+        <div class="topbar">
+          <div class="brand"><span class="brand-mark">C</span> Companion</div>
+          <div>Hackathon Pitch</div>
+        </div>
+        <div class="content grid-2">
+          <div>
+            <div class="eyebrow">Behavioral wellness, made simple</div>
+            <h1>Companion</h1>
+            <p class="lead">A wellness app that notices when your daily patterns change and helps before stress builds up.</p>
+            <p class="quote">Understanding wellness through behavior, not questionnaires.</p>
+            <div class="pill-row">
+              <span class="pill">No mood journal required</span>
+              <span class="pill">Works quietly</span>
+              <span class="pill">Privacy first</span>
+              <span class="pill">Built to demo</span>
+            </div>
+          </div>
+          <div class="orbital" aria-hidden="true">
+            <span class="ring"></span>
+            <span class="ring"></span>
+            <span class="ring"></span>
+            <span class="core">C</span>
+          </div>
+        </div>
+        <div class="footer">
+          <span>Team: Companion</span>
+          <span>01 / 10</span>
+        </div>
+        <aside class="notes">Start with the plain promise: Companion watches for changes in routine and gives gentle support before the user has to ask.</aside>
+      </article>
+
+      <article class="slide">
+        <div class="topbar"><div class="brand"><span class="brand-mark">C</span> Companion</div><div>The Problem</div></div>
+        <div class="content grid-2">
+          <div>
+            <div class="eyebrow">People do not log how they feel every day</div>
+            <h2>Wellness apps usually depend on the hardest habit: remembering to check in.</h2>
+            <p class="lead">When someone is tired, stressed, or overloaded, they are least likely to open an app and describe it clearly.</p>
+          </div>
+          <div class="panel">
+            <div class="list">
+              <div class="list-row">
+                <span class="dot terracotta">1</span>
+                <div><h3>They forget</h3><p class="small">Manual mood tracking fades after the first few days, especially during busy weeks.</p></div>
+              </div>
+              <div class="list-row">
+                <span class="dot amber">2</span>
+                <div><h3>They notice too late</h3><p class="small">Stress often appears gradually through sleep, focus, movement, and screen habits.</p></div>
+              </div>
+              <div class="list-row">
+                <span class="dot cyan">3</span>
+                <div><h3>The picture is incomplete</h3><p class="small">A phone app alone cannot see work patterns, rest patterns, and daily routine together.</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Reactive support misses early warning signs</span><span>02 / 10</span></div>
+      </article>
+
+      <article class="slide">
+        <div class="topbar"><div class="brand"><span class="brand-mark">C</span> Companion</div><div>The Whole System</div></div>
+        <div class="content">
+          <div class="eyebrow">How Companion works in simple words</div>
+          <h2>It notices patterns, understands what changed, and suggests one helpful next step.</h2>
+          <div class="grid-3">
+            <div class="panel"><span class="dot">1</span><h3 style="margin-top:18px;">Notice</h3><p class="small" style="margin-top:12px;">Your devices share approved signals like sleep, movement, screen time, work switching, and rest breaks.</p></div>
+            <div class="panel"><span class="dot amber">2</span><h3 style="margin-top:18px;">Understand</h3><p class="small" style="margin-top:12px;">Companion compares today with your normal routine, so advice is personal instead of generic.</p></div>
+            <div class="panel"><span class="dot cyan">3</span><h3 style="margin-top:18px;">Support</h3><p class="small" style="margin-top:12px;">When patterns look risky, it gives a calm recommendation, chat explanation, or quick breathing reset.</p></div>
+          </div>
+          <p class="quote" style="max-width:1000px;">The user does not need to diagnose themselves. The system turns everyday behavior into early, gentle support.</p>
+        </div>
+        <div class="footer"><span>Simple story: notice, understand, support</span><span>03 / 10</span></div>
+      </article>
+
+      <article class="slide">
+        <div class="topbar"><div class="brand"><span class="brand-mark">C</span> Companion</div><div>Why Different</div></div>
+        <div class="content">
+          <div class="eyebrow">What makes this project stand out</div>
+          <h2>Companion is not another mood tracker. It is a proactive wellness companion.</h2>
+          <div class="grid-3">
+            <div class="panel"><span class="dot">A</span><h3 style="margin-top:18px;">Passive by design</h3><p class="small" style="margin-top:12px;">Users do not have to fill out daily forms for the app to become useful.</p></div>
+            <div class="panel"><span class="dot amber">B</span><h3 style="margin-top:18px;">Cross-device view</h3><p class="small" style="margin-top:12px;">It combines life signals and work signals to understand the user's full routine.</p></div>
+            <div class="panel"><span class="dot cyan">C</span><h3 style="margin-top:18px;">Action, not just charts</h3><p class="small" style="margin-top:12px;">It explains the change and offers a small intervention the user can do immediately.</p></div>
+          </div>
+          <div class="chart" aria-label="Burnout risk timeline chart">
+            <svg viewBox="0 0 900 240" role="img">
+              <defs>
+                <linearGradient id="fill" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#d17e73" stop-opacity="0.36"/>
+                  <stop offset="100%" stop-color="#d17e73" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path d="M 0 198 C 70 190, 100 180, 150 174 S 250 160, 300 126 S 405 82, 450 96 S 552 132, 602 96 S 705 42, 758 50 S 846 64, 900 24 L 900 240 L 0 240 Z" fill="url(#fill)"/>
+              <path d="M 0 198 C 70 190, 100 180, 150 174 S 250 160, 300 126 S 405 82, 450 96 S 552 132, 602 96 S 705 42, 758 50 S 846 64, 900 24" fill="none" stroke="#d17e73" stroke-width="6"/>
+              <path d="M 602 96 C 690 46, 758 50, 900 24" fill="none" stroke="#d9b48f" stroke-width="4" stroke-dasharray="14 12"/>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Personalized support from behavior, not burden</span><span>04 / 10</span></div>
+      </article>
+
+      <article class="slide">
+        <div class="topbar"><div class="brand"><span class="brand-mark">C</span> Companion</div><div>Product Experience</div></div>
+        <div class="content grid-2">
+          <div>
+            <div class="eyebrow">What the user sees</div>
+            <h2>A calm home screen, a clear forecast, and one useful action.</h2>
+            <p class="lead">The product avoids guilt, streak pressure, and noisy dashboards. It gives people a simple read on energy, focus, risk, and the next best step.</p>
+            <div class="pill-row">
+              <span class="pill">Wellness Orbit</span>
+              <span class="pill">Burnout forecast</span>
+              <span class="pill">Companion chat</span>
+              <span class="pill">Guided breathing</span>
+            </div>
+          </div>
+          <div class="phone" aria-label="Product mockup">
+            <div class="phone-top"><span>Wellness Orbit</span><span>Live</span></div>
+            <div class="mini-orbit">85</div>
+            <p class="small" style="text-align:center;color:var(--ink);font-weight:750;">Your cognitive load is steady</p>
+            <div class="score-row">
+              <div class="score"><span class="small">Energy</span><b>85</b></div>
+              <div class="score"><span class="small">Focus</span><b>90</b></div>
+            </div>
+            <div class="card">
+              <span class="tag">Recommended action</span>
+              <p class="small" style="margin-top:14px;">You have been switching tasks often. Take a 60-second breathing break?</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Built for calm, not anxiety</span><span>05 / 10</span></div>
+      </article>
+
+      <article class="slide">
+        <div class="topbar"><div class="brand"><span class="brand-mark">C</span> Companion</div><div>Privacy & Trust</div></div>
+        <div class="content">
+          <div class="eyebrow">Wellness support should not feel like surveillance</div>
+          <h2>Companion uses signals, not personal content.</h2>
+          <p class="lead">Users stay in control of what is collected, what is ignored, and what can be deleted.</p>
+          <div class="privacy-grid">
+            <div class="panel"><span class="tag">No private content</span><p class="small" style="margin-top:18px;">No messages, screenshots, typed words, or personal documents.</p></div>
+            <div class="panel"><span class="tag">User approval</span><p class="small" style="margin-top:18px;">Collection starts from clear permission and onboarding choices.</p></div>
+            <div class="panel"><span class="tag">Sensitive app skip list</span><p class="small" style="margin-top:18px;">Users can ignore banking, password, work, or private apps.</p></div>
+            <div class="panel"><span class="tag">Delete controls</span><p class="small" style="margin-top:18px;">Users can delete today's logs or purge all telemetry.</p></div>
+          </div>
+        </div>
+        <div class="footer"><span>Trust is part of the core product</span><span>06 / 10</span></div>
+      </article>
+
+      <article class="slide">
+        <div class="topbar"><div class="brand"><span class="brand-mark">C</span> Companion</div><div>What We Built</div></div>
+        <div class="content">
+          <div class="eyebrow">Real product depth for the hackathon</div>
+          <h2>The demo is not just slides. The ecosystem is already built across user, support, and admin experiences.</h2>
+          <div class="feature-grid">
+            <div class="feature"><span class="dot">1</span><strong>Mobile wellness app</strong><p class="small">Dashboard, onboarding, settings, forecasts, and breathing session.</p></div>
+            <div class="feature"><span class="dot cyan">2</span><strong>Web demo dashboard</strong><p class="small">Login, live scores, chat, forecast chart, and privacy controls.</p></div>
+            <div class="feature"><span class="dot amber">3</span><strong>Desktop behavior collector</strong><p class="small">Work rhythm, idle time, task switching, and local buffering.</p></div>
+            <div class="feature"><span class="dot violet">4</span><strong>AI wellness reasoning</strong><p class="small">Turns pattern changes into state, risk, explanation, and recommendations.</p></div>
+            <div class="feature"><span class="dot">5</span><strong>Notifications</strong><p class="small">Can deliver timely interventions when risk rises.</p></div>
+            <div class="feature"><span class="dot cyan">6</span><strong>Privacy center</strong><p class="small">Toggles, ignored apps, and delete controls.</p></div>
+            <div class="feature"><span class="dot amber">7</span><strong>Admin console</strong><p class="small">User health, subscription status, pricing plans, and purge actions.</p></div>
+            <div class="feature"><span class="dot terracotta">8</span><strong>Business-ready layer</strong><p class="small">Free, premium, and organization plan structure.</p></div>
+          </div>
+        </div>
+        <div class="footer"><span>Enough breadth to convince judges the idea can become a platform</span><span>07 / 10</span></div>
+      </article>
+
+      <article class="slide">
+        <div class="topbar"><div class="brand"><span class="brand-mark">C</span> Companion</div><div>Demo</div></div>
+        <div class="content">
+          <div class="eyebrow">What judges will see</div>
+          <h2>From everyday behavior to a useful wellness action.</h2>
+          <div class="demo-strip">
+            <div class="demo-step"><div class="demo-num">01</div><h3>Start with consent</h3><p class="small">Show onboarding, profile setup, and privacy choices.</p></div>
+            <div class="demo-step"><div class="demo-num">02</div><h3>Show the dashboard</h3><p class="small">Energy, focus, stress, risk, and the Wellness Orbit.</p></div>
+            <div class="demo-step"><div class="demo-num">03</div><h3>Explain the insight</h3><p class="small">Ask the companion why focus dropped or why risk changed.</p></div>
+            <div class="demo-step"><div class="demo-num">04</div><h3>Take action</h3><p class="small">Launch a breathing reset or show a timely recommendation.</p></div>
+          </div>
+        </div>
+        <div class="footer"><span>Simple demo path, clear judge payoff</span><span>08 / 10</span></div>
+      </article>
+
+      <article class="slide">
+        <div class="topbar"><div class="brand"><span class="brand-mark">C</span> Companion</div><div>Business Model</div></div>
+        <div class="content">
+          <div class="eyebrow">Subscription with organization expansion</div>
+          <h2>Start with individuals, then expand to schools, companies, and wellness programs.</h2>
+          <div class="pricing">
+            <div class="price-card">
+              <div><span class="tag">Free</span><div class="price">$0</div><p class="small">Basic monitoring, current scores, and privacy controls.</p></div>
+              <p class="small">Low-friction adoption</p>
+            </div>
+            <div class="price-card" style="border-color:rgba(142,159,142,.42);">
+              <div><span class="tag">Premium</span><div class="price">$9.99</div><p class="small">Forecasts, deeper insights, companion explanations, and advanced interventions.</p></div>
+              <p class="small">Recurring revenue</p>
+            </div>
+            <div class="price-card">
+              <div><span class="tag">Organizations</span><div class="price">B2B</div><p class="small">Aggregate wellness trends for universities, teams, and workplace wellness programs.</p></div>
+              <p class="small">Scalable expansion</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>The admin console already supports the business story</span><span>09 / 10</span></div>
+      </article>
+
+      <article class="slide">
+        <div class="topbar"><div class="brand"><span class="brand-mark">C</span> Companion</div><div>Vision</div></div>
+        <div class="content grid-2">
+          <div>
+            <div class="eyebrow">Where this goes next</div>
+            <h2>Wellness technology should support people before problems become visible.</h2>
+            <p class="lead">Companion can become the personal wellness layer that understands routine, protects privacy, and gives timely help across daily life.</p>
+            <p class="quote">We are building the shift from reactive mood tracking to proactive behavioral wellness.</p>
+          </div>
+          <div class="panel">
+            <div class="list">
+              <div class="list-row"><span class="dot">1</span><div><h3>For users</h3><p class="small">Less logging, more useful support.</p></div></div>
+              <div class="list-row"><span class="dot amber">2</span><div><h3>For organizations</h3><p class="small">Earlier wellness signals without exposing personal content.</p></div></div>
+              <div class="list-row"><span class="dot cyan">3</span><div><h3>For judges</h3><p class="small">A complete, differentiated platform with a clear demo and growth path.</p></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Thank you</span><span>10 / 10</span></div>
+      </article>
+    </section>
+  </main>
+
+  <div class="kbd">Use arrow keys · Press P to print/export PDF</div>
+  <div class="controls" aria-label="Presentation controls">
+    <button class="control-button" id="prev" type="button">Prev</button>
+    <button class="control-button" id="next" type="button">Next</button>
+  </div>
+  <div class="progress" id="progress"></div>
+
+  <script>
+    const slides = document.getElementById('slides');
+    const progress = document.getElementById('progress');
+    const total = document.querySelectorAll('.slide').length;
+    let index = 0;
+
+    function go(nextIndex) {
+      index = Math.max(0, Math.min(total - 1, nextIndex));
+      slides.style.transform = `translateX(-${index * 100}vw)`;
+      progress.style.width = `${((index + 1) / total) * 100}%`;
+      document.title = `Companion Pitch Deck (${index + 1}/${total})`;
+    }
+
+    document.getElementById('prev').addEventListener('click', () => go(index - 1));
+    document.getElementById('next').addEventListener('click', () => go(index + 1));
+
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight' || event.key === ' ') go(index + 1);
+      if (event.key === 'ArrowLeft') go(index - 1);
+      if (event.key.toLowerCase() === 'p') window.print();
+    });
+
+    go(0);
+  </script>
+</body>
+</html>
