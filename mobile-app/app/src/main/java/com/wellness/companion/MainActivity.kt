@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.core.view.WindowCompat
 import com.wellness.companion.telemetry.TelemetryService
 import com.wellness.companion.ui.viewmodel.DashboardViewModel
 import com.wellness.companion.ui.views.MainNavigationContainer
@@ -20,6 +21,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Make activity edge-to-edge
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
+
         // Load saved privacy and theme settings
         viewModel.loadSettings(this)
 
@@ -30,8 +36,14 @@ class MainActivity : ComponentActivity() {
         handleIntent(intent)
 
         setContent {
+            // Configure status bar icons appearance
+            val isDark = viewModel.isDarkTheme
+            val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+            insetsController.isAppearanceLightStatusBars = !isDark
+            insetsController.isAppearanceLightNavigationBars = !isDark
+
             // Apply dynamic consistent theme based on client-side state
-            val colors = if (viewModel.isDarkTheme) {
+            val colors = if (isDark) {
                 androidx.compose.material3.darkColorScheme(
                     background = androidx.compose.ui.graphics.Color(0xFF12161A),
                     surface = androidx.compose.ui.graphics.Color(0xFF1C2229),

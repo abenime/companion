@@ -46,6 +46,30 @@ sealed interface TimelineUiState {
 
 class DashboardViewModel : ViewModel() {
 
+    companion object {
+        var instance: DashboardViewModel? = null
+    }
+
+    init {
+        instance = this
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        if (instance == this) {
+            instance = null
+        }
+    }
+
+    fun addNotification(title: String, message: String) {
+        notifications.add(0, NotificationItem(
+            id = java.util.UUID.randomUUID().toString(),
+            title = title,
+            message = message,
+            timestamp = "Just now"
+        ))
+    }
+
     // 1. Session and Onboarding State
     var authUser by mutableStateOf<UserDto?>(null)
         private set

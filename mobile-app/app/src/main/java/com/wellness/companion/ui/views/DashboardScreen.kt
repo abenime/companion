@@ -1,5 +1,7 @@
 package com.wellness.companion.ui.views
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -138,11 +140,26 @@ fun MainNavigationContainer(viewModel: DashboardViewModel) {
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                when (currentTab) {
-                    "home" -> WellnessOrbitScreen(viewModel = viewModel, onLaunchIntervention = { viewModel.activeIntervention = "breathing" })
-                    "analytics" -> ForecastingSuiteScreen(viewModel = viewModel, onNavigateToChat = { currentTab = "chat" })
-                    "chat" -> ChatCompanionOverlay(viewModel = viewModel, onDismiss = { currentTab = "home" })
-                    "profile" -> ProfileScreen(viewModel = viewModel, onOpenSettings = { isViewingSettings = true })
+                AnimatedContent(
+                    targetState = currentTab,
+                    transitionSpec = {
+                        // Dynamic sliding directions depending on tab flow
+                        val direction = if (targetState == "home" || (targetState == "analytics" && initialState != "home") || (targetState == "chat" && initialState == "profile")) {
+                            AnimatedContentTransitionScope.SlideDirection.Left
+                        } else {
+                            AnimatedContentTransitionScope.SlideDirection.Right
+                        }
+                        slideIntoContainer(direction, tween(300)) + fadeIn(tween(300)) togetherWith
+                        slideOutOfContainer(direction, tween(300)) + fadeOut(tween(300))
+                    },
+                    label = "TabTransition"
+                ) { tab ->
+                    when (tab) {
+                        "home" -> WellnessOrbitScreen(viewModel = viewModel, onLaunchIntervention = { viewModel.activeIntervention = "breathing" })
+                        "analytics" -> ForecastingSuiteScreen(viewModel = viewModel, onNavigateToChat = { currentTab = "chat" })
+                        "chat" -> ChatCompanionOverlay(viewModel = viewModel, onDismiss = { currentTab = "home" })
+                        "profile" -> ProfileScreen(viewModel = viewModel, onOpenSettings = { isViewingSettings = true })
+                    }
                 }
             }
         }

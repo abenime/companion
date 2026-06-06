@@ -28,6 +28,9 @@ fun SettingsScreen(viewModel: DashboardViewModel, onBack: (() -> Unit)? = null) 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .imePadding()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {

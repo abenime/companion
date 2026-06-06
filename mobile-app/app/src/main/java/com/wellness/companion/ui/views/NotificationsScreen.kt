@@ -26,6 +26,8 @@ fun NotificationsScreen(viewModel: DashboardViewModel, onBack: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
+            .navigationBarsPadding()
             .background(MaterialTheme.colorScheme.background)
     ) {
         // Header
@@ -47,8 +49,13 @@ fun NotificationsScreen(viewModel: DashboardViewModel, onBack: () -> Unit) {
             )
             Spacer(modifier = Modifier.weight(1f))
             if (viewModel.notifications.isNotEmpty()) {
-                TextButton(onClick = { viewModel.clearAllNotifications() }) {
-                    Text("Clear All", color = MaterialTheme.colorScheme.error)
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    TextButton(onClick = { viewModel.markAllNotificationsRead() }) {
+                        Text("Mark Read")
+                    }
+                    TextButton(onClick = { viewModel.clearAllNotifications() }) {
+                        Text("Clear All", color = MaterialTheme.colorScheme.error)
+                    }
                 }
             }
         }

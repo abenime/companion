@@ -31,6 +31,9 @@ class FcmNotificationReceiverService : FirebaseMessagingService() {
         val body = remoteMessage.notification?.body ?: "Take a brief break to rest your mind."
         val notificationId = System.currentTimeMillis().toInt()
 
+        // Also post to active compose view model if running
+        com.wellness.companion.ui.viewmodel.DashboardViewModel.instance?.addNotification(title, body)
+
         // 1. Primary Action: Clicking notification opens MainActivity
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
