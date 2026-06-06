@@ -1,0 +1,160 @@
+{
+  "users": [
+    {
+      "id": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+      "name": "System Admin",
+      "email": "admin@wellness.com",
+      "password_hash": "$2a$10$pOgOGCJluoI0Hk8aKl9.BOn0S3WQpTu9WLerOHEPaeAdG9zWotT.m",
+      "created_at": "2026-05-01T00:00:00.000Z"
+    },
+    {
+      "id": "7ac15bc2-3fe4-4b52-91f8-0051e280fffa",
+      "name": "Jane Doe",
+      "email": "jane@example.com",
+      "password_hash": "$2a$10$pOgOGCJluoI0Hk8aKl9.BOn0S3WQpTu9WLerOHEPaeAdG9zWotT.m",
+      "created_at": "2026-05-15T00:00:00.000Z"
+    }
+  ],
+  "user_profiles": [
+    {
+      "id": "p1",
+      "user_id": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+      "age": 35,
+      "gender": "other",
+      "work_status": "full-time"
+    },
+    {
+      "id": "p2",
+      "user_id": "7ac15bc2-3fe4-4b52-91f8-0051e280fffa",
+      "age": 28,
+      "gender": "female",
+      "work_status": "full-time"
+    }
+  ],
+  "user_connections": [
+    {
+      "id": "c1",
+      "user_id": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+      "calendar_sync_enabled": true,
+      "external_sync_enabled": true
+    },
+    {
+      "id": "c2",
+      "user_id": "7ac15bc2-3fe4-4b52-91f8-0051e280fffa",
+      "calendar_sync_enabled": true,
+      "external_sync_enabled": false
+    }
+  ],
+  "user_baselines": [
+    {
+      "id": "b1",
+      "user_id": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+      "avg_sleep_hours": 8,
+      "avg_steps": 10000,
+      "avg_screen_time_mins": 200,
+      "avg_typing_speed_wpm": 50,
+      "avg_context_switches_per_hour": 10
+    },
+    {
+      "id": "b2",
+      "user_id": "7ac15bc2-3fe4-4b52-91f8-0051e280fffa",
+      "avg_sleep_hours": 8,
+      "avg_steps": 10000,
+      "avg_screen_time_mins": 200,
+      "avg_typing_speed_wpm": 50,
+      "avg_context_switches_per_hour": 10
+    }
+  ],
+  "daily_features": [
+    {
+      "id": "df1",
+      "user_id": "7ac15bc2-3fe4-4b52-91f8-0051e280fffa",
+      "focus_score": 82,
+      "energy_score": 75,
+      "stress_score": 30,
+      "sleep_deficit_percent": -12.5,
+      "screen_time_delta_percent": 15,
+      "social_app_ratio": 0.25,
+      "context_switch_density": 12,
+      "step_deficit_percent": -10,
+      "measured_date": "2026-06-05T00:00:00.000Z"
+    }
+  ],
+  "ai_inferences": [
+    {
+      "id": "inf1",
+      "user_id": "7ac15bc2-3fe4-4b52-91f8-0051e280fffa",
+      "wellness_state": "optimal",
+      "burnout_risk_score": 0.15,
+      "explanation": "Your sleep deficit and work context-switching density are well within normal ranges.",
+      "recommendations": "[\"Maintain your workstation Pomodoro schedule.\",\"Take a 10-minute walk at mid-day.\",\"Keep normal evening sleep hours.\"]",
+      "confidence_score": 0.9,
+      "inference_date": "2026-06-05T00:00:00.000Z"
+    }
+  ],
+  "raw_signals": [],
+  "subscription_plans": [
+    {
+      "id": "f0e0d0c0-b0a0-9080-7060-504030201000",
+      "name": "Free Standard",
+      "slug": "free",
+      "price_cents": 0,
+      "currency": "USD",
+      "billing_interval": "free",
+      "trial_days": 0,
+      "is_active": true,
+      "created_at": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "f0e0d0c0-b0a0-9080-7060-504030201001",
+      "name": "Premium Monthly",
+      "slug": "premium-monthly",
+      "price_cents": 999,
+      "currency": "USD",
+      "billing_interval": "monthly",
+      "trial_days": 14,
+      "is_active": true,
+      "created_at": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "user_subscriptions": [
+    {
+      "id": "s1",
+      "user_id": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+      "plan_id": "f0e0d0c0-b0a0-9080-7060-504030201001",
+      "status": "active",
+      "current_period_start": "2026-06-01T00:00:00.000Z",
+      "current_period_end": "2026-07-01T00:00:00.000Z",
+      "cancel_at_period_end": false
+    },
+    {
+      "id": "s2",
+      "user_id": "7ac15bc2-3fe4-4b52-91f8-0051e280fffa",
+      "plan_id": "f0e0d0c0-b0a0-9080-7060-504030201001",
+      "status": "trialing",
+      "current_period_start": "2026-06-05T00:00:00.000Z",
+      "current_period_end": "2026-06-19T00:00:00.000Z",
+      "cancel_at_period_end": false
+    }
+  ],
+  "system_settings": [
+    {
+      "key": "gemini.system_prompt",
+      "value": "You are a passive wellness companion. Analyze the variance of this user's digital signals and deliver micro-interventions focused on rest, stress management, and workplace health.",
+      "category": "gemini",
+      "description": "System instruction prompt for Gemini AI model recommendations."
+    },
+    {
+      "key": "telemetry.desktop.sampling_interval_seconds",
+      "value": "60",
+      "category": "telemetry",
+      "description": "Interval at which desktop-agent uploads idle and window metadata."
+    },
+    {
+      "key": "notifications.stress_threshold_percent",
+      "value": "85",
+      "category": "notifications",
+      "description": "Stress index score (0-100) above which system triggers stress notifications."
+    }
+  ]
+}
