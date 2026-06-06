@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
 import signalRoutes from './routes/signal.routes';
 import wellnessRoutes from './routes/wellness.routes';
+import adminRoutes from './routes/admin.routes';
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.get('/health', (req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/signals', signalRoutes);
 app.use('/api/v1/wellness', wellnessRoutes);
+app.use('/api/v1/admin', adminRoutes);
 
 // Global Error Handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
