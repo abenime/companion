@@ -25,7 +25,7 @@ export class GeminiInferenceService {
         }
 
         const model = this.ai.getGenerativeModel({ 
-            model: 'gemini-1.5-pro',
+            model: 'gemini-2.5-flash',
             generationConfig: { responseMimeType: 'application/json' }
         });
 
@@ -133,7 +133,7 @@ export class GeminiInferenceService {
             return "I am operating in offline mode as the Gemini API key is not configured. Ask me about focus scores or stress levels to see diagnostic telemetry advice.";
         }
 
-        const model = this.ai.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const model = this.ai.getGenerativeModel({ model: 'gemini-2.5-flash' });
         
         const formattedHistory = history.map(msg => 
             `${msg.sender === 'user' ? 'User' : 'Companion'}: ${msg.text}`
