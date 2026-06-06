@@ -722,6 +722,56 @@ function App() {
               <p className={`text-[9px] uppercase tracking-widest font-extrabold ${mutedStyle}`}>On-Device Cognitive Health Broker</p>
             </div>
 
+            {/* Mobile App Promo Banner */}
+            <div className={`p-5 rounded-2xl border text-xs space-y-3 shadow-sm ${
+              isDarkTheme 
+                ? 'bg-[#1C2229]/50 border-gray-800' 
+                : 'bg-[#F2F5F2]/80 border-[#D1DDD1]'
+            }`}>
+              <div className="flex items-center space-x-2">
+                <Smartphone className={`w-5 h-5 ${isDarkTheme ? 'text-[#8E9F8E]' : 'text-[#3b533b]'}`} />
+                <h4 className={`font-black tracking-wider uppercase text-xs ${isDarkTheme ? 'text-[#8E9F8E]' : 'text-[#3b533b]'}`}>
+                  Mobile Companion App Required
+                </h4>
+              </div>
+              <p className={`text-[11px] leading-relaxed font-medium ${mutedStyle}`}>
+                The web version is a <strong>status dashboard only</strong> to view your telemetry logs and AI interventions. For full access to background tracking, configure the mobile app to monitor:
+              </p>
+              <ul className={`grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-semibold ${mutedStyle}`}>
+                <li className="flex items-center space-x-1.5">
+                  <span className={isDarkTheme ? 'text-[#8E9F8E]' : 'text-[#3b533b]'}>✓</span>
+                  <span>Active Screen Time Logs</span>
+                </li>
+                <li className="flex items-center space-x-1.5">
+                  <span className={isDarkTheme ? 'text-[#8E9F8E]' : 'text-[#3b533b]'}>✓</span>
+                  <span>Daily Steps & Locomotion</span>
+                </li>
+                <li className="flex items-center space-x-1.5">
+                  <span className={isDarkTheme ? 'text-[#8E9F8E]' : 'text-[#3b533b]'}>✓</span>
+                  <span>Sleep & Bedtime Duration</span>
+                </li>
+                <li className="flex items-center space-x-1.5">
+                  <span className={isDarkTheme ? 'text-[#8E9F8E]' : 'text-[#3b533b]'}>✓</span>
+                  <span>App Usage & Distraction Ratios</span>
+                </li>
+              </ul>
+              <div className="pt-1">
+                <a 
+                  href="https://companion-bfmp.onrender.com/download/companion-app.apk" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className={`inline-flex items-center justify-center space-x-2 w-full py-2 px-4 rounded-xl text-[11px] font-black tracking-widest uppercase transition-all shadow-sm ${
+                    isDarkTheme 
+                      ? 'bg-[#8E9F8E] hover:bg-[#A3B3A3] text-[#12161A]' 
+                      : 'bg-[#3b533b] hover:bg-[#4d6b4d] text-white'
+                  }`}
+                >
+                  <Smartphone className="w-3.5 h-3.5 fill-current animate-bounce" />
+                  <span>Download Mobile App (APK)</span>
+                </a>
+              </div>
+            </div>
+
             {/* Form navigation tabs */}
             <div className={`flex border-b pb-1 ${borderStyle}`}>
               <button
