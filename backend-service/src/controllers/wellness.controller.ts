@@ -297,8 +297,9 @@ export class WellnessController {
             const amount = (plan.price_cents / 100).toString();
 
             // 4. Initialize transaction with Chapa
-            const callbackUrl = `http://localhost:3000/api/v1/wellness/subscription/chapa/verify/${tx_ref}`;
-            const returnUrl = `http://localhost:3000/api/v1/wellness/subscription/chapa/verify/${tx_ref}`;
+            // Dynamically detect host (e.g. 172.16.156.202:3000 or localhost:3000) or override with BACKEND_URL in env
+            const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
+            const returnUrl = `${backendUrl}/api/v1/wellness/subscription/chapa/verify/${tx_ref}`;
 
             const response = await fetch('https://api.chapa.co/v1/transaction/initialize', {
                 method: 'POST',
@@ -313,9 +314,8 @@ export class WellnessController {
                     first_name,
                     last_name,
                     tx_ref,
-                    callback_url: callbackUrl,
                     return_url: returnUrl,
-                    customization: {
+                    customizations: {
                         title: `Wellness Premium Plan`,
                         description: `Subscription upgrade to Premium`
                     }
@@ -329,11 +329,10 @@ export class WellnessController {
                     tx_ref
                 });
             } else {
-                // Return fallback checkout URL for testing if the key is dummy or request fails
-                res.status(200).json({
-                    checkout_url: `${callbackUrl}?status=success_mock`,
-                    tx_ref,
-                    message: 'Mock session initialized successfully for local testing.'
+                console.error('Chapa API Error Details:', data);
+                res.status(400).json({
+                    error: `Chapa API Error: ${data.message || response.statusText}`,
+                    details: data
                 });
             }
 
@@ -345,7 +344,6 @@ export class WellnessController {
 
     public static async verifyChapaPayment(req: any, res: Response): Promise<void> {
         const { tx_ref } = req.params;
-        const mockStatus = req.query.status as string;
 
         const db = DatabaseConnection.getInstance();
         try {
@@ -367,24 +365,16 @@ export class WellnessController {
 
             let paymentSuccess = false;
 
-            if (mockStatus === 'success_mock') {
-                paymentSuccess = true;
-            } else {
-                const chapaSecretKey = process.env.CHAPA_SECRET_KEY || 'CHASECK_TEST-dummykey';
-                const verifyRes = await fetch(`https://api.chapa.co/v1/transaction/verify/${tx_ref}`, {
-                    headers: {
-                        'Authorization': `Bearer ${chapaSecretKey}`
-                    }
-                });
-
-                const verifyData: any = await verifyRes.json();
-                if (verifyRes.ok && verifyData.status === 'success') {
-                    paymentSuccess = true;
-                } else {
-                    if (chapaSecretKey.includes('TEST') || chapaSecretKey.includes('dummy')) {
-                        paymentSuccess = true;
-                    }
+            const chapaSecretKey = process.env.CHAPA_SECRET_KEY || 'CHASECK_TEST-dummykey';
+            const verifyRes = await fetch(`https://api.chapa.co/v1/transaction/verify/${tx_ref}`, {
+                headers: {
+                    'Authorization': `Bearer ${chapaSecretKey}`
                 }
+            });
+
+            const verifyData: any = await verifyRes.json();
+            if (verifyRes.ok && verifyData.status === 'success') {
+                paymentSuccess = true;
             }
 
             if (paymentSuccess) {
