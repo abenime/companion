@@ -87,7 +87,7 @@ class DashboardViewModel : ViewModel() {
         private set
 
     // 3. Dual Theme Client-side Settings (handled strictly on-device)
-    var isDarkTheme by mutableStateOf(true)
+    var isDarkTheme by mutableStateOf(false)
         private set
 
     fun toggleTheme() {
@@ -264,8 +264,21 @@ class DashboardViewModel : ViewModel() {
     var activeIntervention by mutableStateOf<String?>(null)
 
     fun handleChatQuery(prompt: String) {
+        val token = authToken
         chatMessages.add(ChatMessage("user", prompt))
         viewModelScope.launch {
+            if (token != null) {
+                try {
+                    val historyList = chatMessages.map { ChatMessageDto(it.sender, it.text) }
+                    val payload = ChatPayload(prompt, historyList)
+                    val response = RetrofitClient.api.sendChatQuery(token, payload)
+                    chatMessages.add(ChatMessage("companion", response.reply))
+                    return@launch
+                } catch (e: Exception) {
+                    android.util.Log.e("DashboardViewModel", "Gemini chat failed, fallback to heuristics: ${e.message}")
+                }
+            }
+
             kotlinx.coroutines.delay(800)
             val promptLower = prompt.lowercase()
             val reply = when {

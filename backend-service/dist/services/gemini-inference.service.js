@@ -113,5 +113,33 @@ class GeminiInferenceService {
             confidence: 0.90
         };
     }
+    async generateChatResponse(userPrompt, history) {
+        if (!process.env.GEMINI_API_KEY) {
+            return "I am operating in offline mode as the Gemini API key is not configured. Ask me about focus scores or stress levels to see diagnostic telemetry advice.";
+        }
+        const model = this.ai.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const formattedHistory = history.map(msg => `${msg.sender === 'user' ? 'User' : 'Companion'}: ${msg.text}`).join('\n');
+        const prompt = `
+            You are a supportive, high-fidelity passive AI Wellness Companion. 
+            You analyze telemetry data, step deficits, and workplace context-switches. 
+            Respond conversationally, helpfully, and with high empathy, offering practical stress management tips.
+            
+            Conversation History:
+            ${formattedHistory}
+            
+            User's New Message:
+            ${userPrompt}
+            
+            Provide a short (2-3 sentences), highly actionable and comforting response.
+        `;
+        try {
+            const result = await model.generateContent(prompt);
+            return result.response.text().trim();
+        }
+        catch (err) {
+            console.error("Gemini chat execution failed:", err);
+            return "I encountered a network issue communicating with my AI brain. Please take a deep breath, stretch, and try again.";
+        }
+    }
 }
 exports.GeminiInferenceService = GeminiInferenceService;

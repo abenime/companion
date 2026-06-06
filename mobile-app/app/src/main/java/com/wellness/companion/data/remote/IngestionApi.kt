@@ -59,6 +59,12 @@ interface IngestionApi {
         @Header("Authorization") token: String
     ): SimpleResponse
 
+    @POST("api/v1/wellness/chat")
+    suspend fun sendChatQuery(
+        @Header("Authorization") token: String,
+        @Body payload: ChatPayload
+    ): ChatResponse
+
     @GET("api/v1/wellness/subscription")
     suspend fun getSubscription(
         @Header("Authorization") token: String
@@ -192,4 +198,18 @@ data class ChapaInitPayload(
 data class ChapaInitResponse(
     val checkout_url: String,
     val tx_ref: String
+)
+
+data class ChatMessageDto(
+    val sender: String,
+    val text: String
+)
+
+data class ChatPayload(
+    val prompt: String,
+    val history: List<ChatMessageDto>
+)
+
+data class ChatResponse(
+    val reply: String
 )

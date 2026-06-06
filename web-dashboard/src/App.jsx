@@ -52,7 +52,7 @@ const BASE_URL = 'http://localhost:3000';
 
 function App() {
   // Theme state
-  const [isDarkTheme, setIsDarkTheme] = useState(true);
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
 
   // Auth states
   const [authToken, setAuthToken] = useState(localStorage.getItem('auth_token') || null);

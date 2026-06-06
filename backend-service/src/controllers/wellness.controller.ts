@@ -231,6 +231,23 @@ export class WellnessController {
         }
     }
 
+    public static async runAIChat(req: any, res: Response): Promise<void> {
+        const { prompt, history } = req.body;
+        if (!prompt) {
+            res.status(400).json({ error: 'Missing prompt' });
+            return;
+        }
+
+        try {
+            const gemini = new GeminiInferenceService();
+            const reply = await gemini.generateChatResponse(prompt, history || []);
+            res.status(200).json({ reply });
+        } catch (error: any) {
+            console.error('AI chat endpoint error:', error);
+            res.status(500).json({ error: 'Internal server error during chat' });
+        }
+    }
+
     public static async getSubscription(req: any, res: Response): Promise<void> {
         const userId = req.userId;
         const db = DatabaseConnection.getInstance();

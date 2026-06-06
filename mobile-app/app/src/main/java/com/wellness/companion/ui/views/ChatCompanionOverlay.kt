@@ -107,6 +107,8 @@ fun ChatCompanionOverlay(viewModel: DashboardViewModel, onDismiss: () -> Unit) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .imePadding()
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
