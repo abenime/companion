@@ -8,156 +8,202 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wellness.companion.ui.viewmodel.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(viewModel: DashboardViewModel, onOpenSettings: () -> Unit) {
+fun ProfileScreen(
+    viewModel: DashboardViewModel,
+    onOpenSettings: () -> Unit,
+    onOpenSubscription: () -> Unit
+) {
     val user = viewModel.authUser
 
-    LazyColumn(
+    val pullToRefreshState = rememberPullToRefreshState()
+    if (pullToRefreshState.isRefreshing) {
+        LaunchedEffect(true) {
+            viewModel.fetchDashboardData()
+        }
+    }
+
+    LaunchedEffect(viewModel.isRefreshing) {
+        if (viewModel.isRefreshing) {
+            pullToRefreshState.startRefresh()
+        } else {
+            pullToRefreshState.endRefresh()
+        }
+    }
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+            .nestedScroll(pullToRefreshState.nestedScrollConnection)
     ) {
-        // Demographic Profile Header Card
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            // Demographic Profile Header Card
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
-                    Box(
+                    Column(
                         modifier = Modifier
-                            .size(80.dp)
-                            .background(MaterialTheme.colorScheme.primary, shape = CircleShape),
-                        contentAlignment = Alignment.Center
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(80.dp)
+                                .background(MaterialTheme.colorScheme.primary, shape = CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = user?.name?.substring(0, 1)?.uppercase() ?: "U",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 32.sp
+                            )
+                        }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = user?.name ?: "Jane Doe",
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                            Text(
+                                text = user?.email ?: "jane@example.com",
+                                color = Color.Gray,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Demographics details section
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
-                            text = user?.name?.substring(0, 1)?.uppercase() ?: "U",
-                            color = Color.White,
+                            "PERSONAL METADATA",
                             fontWeight = FontWeight.Bold,
-                            fontSize = 32.sp
-                        )
-                    }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = user?.name ?: "Jane Doe",
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                        Text(
-                            text = user?.email ?: "jane@example.com",
                             color = Color.Gray,
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.labelMedium
                         )
+                        
+                        user?.profile?.let { prof ->
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text("Age", fontWeight = FontWeight.Medium)
+                                Text("${prof.age}", color = Color.Gray)
+                            }
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text("Gender", fontWeight = FontWeight.Medium)
+                                Text(prof.gender, color = Color.Gray)
+                            }
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text("Employment Status", fontWeight = FontWeight.Medium)
+                                Text(prof.work_status, color = Color.Gray)
+                            }
+                        } ?: run {
+                            Text("No metadata profile details found.", color = Color.Gray)
+                        }
                     }
                 }
             }
-        }
 
-        // Demographics details section
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+            // Theme and app settings shortcut section
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
-                    Text(
-                        "PERSONAL METADATA",
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Gray,
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                    
-                    user?.profile?.let { prof ->
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(
+                            "PREFERENCES",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Gray,
+                            style = MaterialTheme.typography.labelMedium
+                        )
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Age", fontWeight = FontWeight.Medium)
-                            Text("${prof.age}", color = Color.Gray)
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(imageVector = Icons.Default.FavoriteBorder, contentDescription = "Theme Icon")
+                                Text("Dark Mode Theme", modifier = Modifier.padding(start = 12.dp))
+                            }
+                            Switch(
+                                checked = viewModel.isDarkTheme,
+                                onCheckedChange = { viewModel.toggleTheme() }
+                            )
                         }
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Gender", fontWeight = FontWeight.Medium)
-                            Text(prof.gender, color = Color.Gray)
+
+                        Button(
+                            onClick = onOpenSubscription,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
+                        ) {
+                            Icon(imageVector = Icons.Default.Star, contentDescription = "Subscription Icon")
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Upgrade & Subscriptions")
                         }
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Employment Status", fontWeight = FontWeight.Medium)
-                            Text(prof.work_status, color = Color.Gray)
+
+                        Button(
+                            onClick = onOpenSettings,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer)
+                        ) {
+                            Icon(imageVector = Icons.Default.Settings, contentDescription = "Settings Icon")
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Open Privacy & Data Settings")
                         }
-                    } ?: run {
-                        Text("No metadata profile details found.", color = Color.Gray)
                     }
                 }
             }
         }
 
-        // Theme and app settings shortcut section
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Text(
-                        "PREFERENCES",
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Gray,
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(imageVector = Icons.Default.FavoriteBorder, contentDescription = "Theme Icon")
-                            Text("Dark Mode Theme", modifier = Modifier.padding(start = 12.dp))
-                        }
-                        Switch(
-                            checked = viewModel.isDarkTheme,
-                            onCheckedChange = { viewModel.toggleTheme() }
-                        )
-                    }
-
-                    Button(
-                        onClick = onOpenSettings,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer)
-                    ) {
-                        Icon(imageVector = Icons.Default.Settings, contentDescription = "Settings Icon")
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Open Privacy & Data Settings")
-                    }
-                }
-            }
-        }
+        PullToRefreshContainer(
+            state = pullToRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
     }
 }
 
 @Composable
 fun SideNavigationDrawerContent(viewModel: DashboardViewModel, onClose: () -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val user = viewModel.authUser
     
     Column(
@@ -212,6 +258,19 @@ fun SideNavigationDrawerContent(viewModel: DashboardViewModel, onClose: () -> Un
         }
 
         Spacer(modifier = Modifier.weight(1f))
+
+        Button(
+            onClick = {
+                onClose()
+                viewModel.logoutUser(context)
+            },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+        ) {
+            Text("Log Out", color = Color.White)
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedButton(
             onClick = {

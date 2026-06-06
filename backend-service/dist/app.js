@@ -25,6 +25,7 @@ app.use('/api/v1/auth', auth_routes_1.default);
 app.use('/api/v1/signals', signal_routes_1.default);
 app.use('/api/v1/wellness', wellness_routes_1.default);
 app.use('/api/v1/admin', admin_routes_1.default);
+app.use('/api/v1/admin', admin_routes_1.default);
 // Global Error Handler
 app.use((err, req, res, next) => {
     console.error('Unhandled Server Error:', err);

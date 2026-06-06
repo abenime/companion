@@ -73,6 +73,10 @@ class TelemetrySyncWorker(private val context: Context, params: WorkerParameters
                         .build()
                     
                     notificationManager.notify(44103, silentNotification)
+                    com.wellness.companion.ui.viewmodel.DashboardViewModel.instance?.addNotification(
+                        "Evening Reflection",
+                        "Your behavioral patterns show high focus today with minimal context switching. Take a moment to unwind."
+                    )
                     prefs.edit().putString("last_evening_review_date", todayStr).apply()
                 }
             }
