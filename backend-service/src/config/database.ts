@@ -254,26 +254,26 @@ export class DatabaseConnection {
                 `);
 
                 await client.query(`
-                    INSERT INTO user_profiles (id, user_id, age, gender, work_status)
-                    VALUES ('p1', '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d', 35, 'other', 'full-time')
+                    INSERT INTO user_profiles (user_id, age, gender, work_status)
+                    VALUES ('9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d', 35, 'other', 'full-time')
                     ON CONFLICT (user_id) DO NOTHING;
                 `);
 
                 await client.query(`
-                    INSERT INTO user_connections (id, user_id, calendar_sync_enabled, external_sync_enabled)
-                    VALUES ('c1', '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d', true, true)
+                    INSERT INTO user_connections (user_id, calendar_sync_enabled, external_sync_enabled)
+                    VALUES ('9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d', true, true)
                     ON CONFLICT (user_id) DO NOTHING;
                 `);
 
                 await client.query(`
-                    INSERT INTO user_baselines (id, user_id, avg_sleep_hours, avg_steps, avg_screen_time_mins, avg_typing_speed_wpm, avg_context_switches_per_hour)
-                    VALUES ('b1', '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d', 8, 10000, 200, 50, 10)
+                    INSERT INTO user_baselines (user_id, avg_sleep_hours, avg_steps, avg_screen_time_mins, avg_typing_speed_wpm, avg_context_switches_per_hour)
+                    VALUES ('9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d', 8, 10000, 200, 50, 10)
                     ON CONFLICT (user_id) DO NOTHING;
                 `);
 
                 await client.query(`
-                    INSERT INTO user_subscriptions (id, user_id, plan_id, status, current_period_start, current_period_end)
-                    VALUES ('s1', '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d', 'f0e0d0c0-b0a0-9080-7060-504030201001', 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '30 days')
+                    INSERT INTO user_subscriptions (user_id, plan_id, status, current_period_start, current_period_end)
+                    VALUES ('9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d', 'f0e0d0c0-b0a0-9080-7060-504030201001', 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '30 days')
                     ON CONFLICT (user_id) DO NOTHING;
                 `);
 
