@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,7 +20,11 @@ import androidx.compose.ui.unit.sp
 import com.wellness.companion.ui.viewmodel.*
 
 @Composable
-fun ProfileScreen(viewModel: DashboardViewModel, onOpenSettings: () -> Unit) {
+fun ProfileScreen(
+    viewModel: DashboardViewModel,
+    onOpenSettings: () -> Unit,
+    onOpenSubscription: () -> Unit
+) {
     val user = viewModel.authUser
 
     LazyColumn(
@@ -142,6 +147,16 @@ fun ProfileScreen(viewModel: DashboardViewModel, onOpenSettings: () -> Unit) {
                     }
 
                     Button(
+                        onClick = onOpenSubscription,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
+                    ) {
+                        Icon(imageVector = Icons.Default.Star, contentDescription = "Subscription Icon")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Upgrade & Subscriptions")
+                    }
+
+                    Button(
                         onClick = onOpenSettings,
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer)
@@ -158,6 +173,7 @@ fun ProfileScreen(viewModel: DashboardViewModel, onOpenSettings: () -> Unit) {
 
 @Composable
 fun SideNavigationDrawerContent(viewModel: DashboardViewModel, onClose: () -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val user = viewModel.authUser
     
     Column(
@@ -212,6 +228,19 @@ fun SideNavigationDrawerContent(viewModel: DashboardViewModel, onClose: () -> Un
         }
 
         Spacer(modifier = Modifier.weight(1f))
+
+        Button(
+            onClick = {
+                onClose()
+                viewModel.logoutUser(context)
+            },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+        ) {
+            Text("Log Out", color = Color.White)
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedButton(
             onClick = {

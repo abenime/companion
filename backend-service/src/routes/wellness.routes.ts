@@ -10,4 +10,9 @@ router.get('/predictions', authenticateJWT, WellnessController.getPredictionsTim
 router.delete('/logs/today', authenticateJWT, WellnessController.deleteTodayLogs);
 router.delete('/logs/all', authenticateJWT, WellnessController.purgeAllLogs);
 
+// Subscription and Payment Endpoints
+router.get('/subscription', authenticateJWT, WellnessController.getSubscription);
+router.post('/subscription/chapa/initialize', authenticateJWT, WellnessController.initializeChapaPayment);
+router.get('/subscription/chapa/verify/:tx_ref', WellnessController.verifyChapaPayment);
+
 export default router;

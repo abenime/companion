@@ -3,7 +3,6 @@ node_modules/
 jspm_packages/
 
 # TypeScript Build output
-dist/
 build/
 
 # Debug and Log files

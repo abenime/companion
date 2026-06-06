@@ -25,9 +25,40 @@ fun MainNavigationContainer(viewModel: DashboardViewModel) {
     var currentTab by remember { mutableStateOf("home") }
     var isViewingNotifications by remember { mutableStateOf(false) }
     var isViewingSettings by remember { mutableStateOf(false) }
+    var isViewingSubscription by remember { mutableStateOf(false) }
+
+    val sub = viewModel.subscriptionState
+    val isAccessLocked = remember(sub) {
+        if (sub == null) {
+            false
+        } else {
+            val isTrialing = sub.plan_slug == "premium-monthly" && sub.status == "trialing"
+            val isActive = sub.status == "active"
+            val isExpired = sub.current_period_end?.let { dateStr ->
+                try {
+                    val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+                    val expiry = sdf.parse(dateStr.substring(0, 10))
+                    expiry?.before(java.util.Date()) ?: false
+                } catch (e: Exception) {
+                    false
+                }
+            } ?: false
+            val isFreePlan = sub.plan_slug == "free"
+
+            (!isActive && !isTrialing) || isExpired || isFreePlan
+        }
+    }
 
     if (viewModel.authUser == null) {
         OnboardingWizard(viewModel = viewModel)
+        return
+    }
+
+    if (isAccessLocked) {
+        SubscriptionScreen(
+            viewModel = viewModel,
+            onBack = null
+        )
         return
     }
 
@@ -50,6 +81,14 @@ fun MainNavigationContainer(viewModel: DashboardViewModel) {
         SettingsScreen(
             viewModel = viewModel,
             onBack = { isViewingSettings = false }
+        )
+        return
+    }
+
+    if (isViewingSubscription) {
+        SubscriptionScreen(
+            viewModel = viewModel,
+            onBack = { isViewingSubscription = false }
         )
         return
     }
@@ -158,7 +197,11 @@ fun MainNavigationContainer(viewModel: DashboardViewModel) {
                         "home" -> WellnessOrbitScreen(viewModel = viewModel, onLaunchIntervention = { viewModel.activeIntervention = "breathing" })
                         "analytics" -> ForecastingSuiteScreen(viewModel = viewModel, onNavigateToChat = { currentTab = "chat" })
                         "chat" -> ChatCompanionOverlay(viewModel = viewModel, onDismiss = { currentTab = "home" })
-                        "profile" -> ProfileScreen(viewModel = viewModel, onOpenSettings = { isViewingSettings = true })
+                        "profile" -> ProfileScreen(
+                            viewModel = viewModel,
+                            onOpenSettings = { isViewingSettings = true },
+                            onOpenSubscription = { isViewingSubscription = true }
+                        )
                     }
                 }
             }

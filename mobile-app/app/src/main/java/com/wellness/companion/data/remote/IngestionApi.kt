@@ -58,6 +58,17 @@ interface IngestionApi {
     suspend fun purgeAllLogs(
         @Header("Authorization") token: String
     ): SimpleResponse
+
+    @GET("api/v1/wellness/subscription")
+    suspend fun getSubscription(
+        @Header("Authorization") token: String
+    ): SubscriptionResponse
+
+    @POST("api/v1/wellness/subscription/chapa/initialize")
+    suspend fun initializeChapaPayment(
+        @Header("Authorization") token: String,
+        @Body payload: ChapaInitPayload
+    ): ChapaInitResponse
 }
 
 // Request & Response DTOs
@@ -163,4 +174,22 @@ data class TimelineItemDto(
 
 data class TimelineResponse(
     val timeline: List<TimelineItemDto>
+)
+
+data class SubscriptionResponse(
+    val status: String,
+    val current_period_end: String?,
+    val plan_name: String,
+    val plan_slug: String,
+    val price_cents: Int,
+    val currency: String
+)
+
+data class ChapaInitPayload(
+    val plan_slug: String
+)
+
+data class ChapaInitResponse(
+    val checkout_url: String,
+    val tx_ref: String
 )

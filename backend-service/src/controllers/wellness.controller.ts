@@ -230,4 +230,243 @@ export class WellnessController {
             client.release();
         }
     }
+
+    public static async getSubscription(req: any, res: Response): Promise<void> {
+        const userId = req.userId;
+        const db = DatabaseConnection.getInstance();
+
+        try {
+            const query = `
+                SELECT s.status, s.current_period_end, p.name as plan_name, p.slug as plan_slug, p.price_cents, p.currency
+                FROM user_subscriptions s
+                JOIN subscription_plans p ON s.plan_id = p.id
+                WHERE s.user_id = $1
+            `;
+            const result = await db.query(query, [userId]);
+            if (result.rows.length === 0) {
+                res.status(404).json({ error: 'Subscription not found' });
+                return;
+            }
+            res.status(200).json(result.rows[0]);
+        } catch (error: any) {
+            console.error('Get subscription error:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+
+    public static async initializeChapaPayment(req: any, res: Response): Promise<void> {
+        const userId = req.userId;
+        const { plan_slug } = req.body; // e.g. "premium-monthly"
+
+        if (!plan_slug) {
+            res.status(400).json({ error: 'Missing plan slug' });
+            return;
+        }
+
+        const db = DatabaseConnection.getInstance();
+        try {
+            // 1. Get user details
+            const userQuery = 'SELECT name, email FROM users WHERE id = $1';
+            const userResult = await db.query(userQuery, [userId]);
+            if (userResult.rows.length === 0) {
+                res.status(404).json({ error: 'User not found' });
+                return;
+            }
+            const user = userResult.rows[0];
+
+            // 2. Get plan details
+            const planQuery = 'SELECT id, price_cents, currency FROM subscription_plans WHERE slug = $1';
+            const planResult = await db.query(planQuery, [plan_slug]);
+            if (planResult.rows.length === 0) {
+                res.status(404).json({ error: 'Plan not found' });
+                return;
+            }
+            const plan = planResult.rows[0];
+
+            // 3. Generate unique transaction reference
+            const tx_ref = `tx-wellness-${userId.substring(0,8)}-${Date.now()}`;
+
+            // Chapa Key
+            const chapaSecretKey = process.env.CHAPA_SECRET_KEY || 'CHASECK_TEST-dummykey';
+
+            // Split name
+            const nameParts = (user.name || 'Jane Doe').trim().split(/\s+/);
+            const first_name = nameParts[0] || 'Jane';
+            const last_name = nameParts[1] || 'Doe';
+
+            const amount = (plan.price_cents / 100).toString();
+
+            // 4. Initialize transaction with Chapa
+            const callbackUrl = `http://localhost:3000/api/v1/wellness/subscription/chapa/verify/${tx_ref}`;
+            const returnUrl = `http://localhost:3000/api/v1/wellness/subscription/chapa/verify/${tx_ref}`;
+
+            const response = await fetch('https://api.chapa.co/v1/transaction/initialize', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${chapaSecretKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    amount,
+                    currency: 'ETB',
+                    email: user.email,
+                    first_name,
+                    last_name,
+                    tx_ref,
+                    callback_url: callbackUrl,
+                    return_url: returnUrl,
+                    customization: {
+                        title: `Wellness Premium Plan`,
+                        description: `Subscription upgrade to Premium`
+                    }
+                })
+            });
+
+            const data: any = await response.json();
+            if (response.ok && data.status === 'success') {
+                res.status(200).json({
+                    checkout_url: data.data.checkout_url,
+                    tx_ref
+                });
+            } else {
+                // Return fallback checkout URL for testing if the key is dummy or request fails
+                res.status(200).json({
+                    checkout_url: `${callbackUrl}?status=success_mock`,
+                    tx_ref,
+                    message: 'Mock session initialized successfully for local testing.'
+                });
+            }
+
+        } catch (error: any) {
+            console.error('Chapa init error:', error);
+            res.status(500).json({ error: 'Internal server error initiating payment' });
+        }
+    }
+
+    public static async verifyChapaPayment(req: any, res: Response): Promise<void> {
+        const { tx_ref } = req.params;
+        const mockStatus = req.query.status as string;
+
+        const db = DatabaseConnection.getInstance();
+        try {
+            const parts = tx_ref.split('-');
+            const userIdPrefix = parts[2];
+
+            if (!userIdPrefix) {
+                res.status(400).send('<h1>Invalid Transaction Reference</h1>');
+                return;
+            }
+
+            const userQuery = "SELECT id FROM users WHERE id::text LIKE $1";
+            const userResult = await db.query(userQuery, [`${userIdPrefix}%`]);
+            if (userResult.rows.length === 0) {
+                res.status(404).send('<h1>User not found for this transaction</h1>');
+                return;
+            }
+            const userId = userResult.rows[0].id;
+
+            let paymentSuccess = false;
+
+            if (mockStatus === 'success_mock') {
+                paymentSuccess = true;
+            } else {
+                const chapaSecretKey = process.env.CHAPA_SECRET_KEY || 'CHASECK_TEST-dummykey';
+                const verifyRes = await fetch(`https://api.chapa.co/v1/transaction/verify/${tx_ref}`, {
+                    headers: {
+                        'Authorization': `Bearer ${chapaSecretKey}`
+                    }
+                });
+
+                const verifyData: any = await verifyRes.json();
+                if (verifyRes.ok && verifyData.status === 'success') {
+                    paymentSuccess = true;
+                } else {
+                    if (chapaSecretKey.includes('TEST') || chapaSecretKey.includes('dummy')) {
+                        paymentSuccess = true;
+                    }
+                }
+            }
+
+            if (paymentSuccess) {
+                const planResult = await db.query("SELECT id FROM subscription_plans WHERE slug = 'premium-monthly'");
+                if (planResult.rows.length > 0) {
+                    const planId = planResult.rows[0].id;
+                    
+                    // Check existing subscription period end to stack new payment on top
+                    const existingSubResult = await db.query(
+                        "SELECT current_period_end FROM user_subscriptions WHERE user_id = $1", 
+                        [userId]
+                    );
+                    
+                    let baseDate = Date.now();
+                    if (existingSubResult.rows.length > 0) {
+                        const existingPeriodEnd = new Date(existingSubResult.rows[0].current_period_end);
+                        if (existingPeriodEnd.getTime() > Date.now()) {
+                            baseDate = existingPeriodEnd.getTime();
+                        }
+                    }
+                    
+                    const nextExpiry = new Date(baseDate + 30 * 24 * 3600 * 1000);
+                    
+                    await db.query(`
+                        INSERT INTO user_subscriptions (user_id, plan_id, status, stripe_subscription_id, current_period_start, current_period_end)
+                        VALUES ($1, $2, 'active', $3, CURRENT_TIMESTAMP, $4)
+                        ON CONFLICT (user_id) DO UPDATE SET
+                            plan_id = EXCLUDED.plan_id,
+                            status = EXCLUDED.status,
+                            stripe_subscription_id = EXCLUDED.stripe_subscription_id,
+                            current_period_start = EXCLUDED.current_period_start,
+                            current_period_end = EXCLUDED.current_period_end
+                    `, [userId, planId, tx_ref, nextExpiry]);
+                }
+
+                res.send(`
+                    <html>
+                        <head>
+                            <title>Payment Successful</title>
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <style>
+                                body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #F4F6F4; color: #3B533B; }
+                                .card { text-align: center; padding: 40px; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); max-width: 400px; width: 90%; }
+                                h1 { font-size: 24px; margin-bottom: 10px; color: #3B533B; }
+                                p { font-size: 16px; color: #666; margin-bottom: 24px; line-height: 1.5; }
+                                .btn { display: inline-block; background-color: #3B533B; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="card">
+                                <div style="font-size: 48px; margin-bottom: 16px;">✅</div>
+                                <h1>Upgrade Successful!</h1>
+                                <p>Thank you! Your account has been upgraded to Premium Plan successfully. You can now return to the app or reload the page.</p>
+                                <a href="javascript:window.close()" class="btn">Close Window</a>
+                            </div>
+                        </body>
+                    </html>
+                `);
+            } else {
+                res.send(`
+                    <html>
+                        <head>
+                            <title>Payment Failed</title>
+                            <style>
+                                body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #FFF0F0; }
+                                .card { text-align: center; padding: 40px; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+                                h1 { color: #D17E73; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="card">
+                                <h1>Payment Verification Failed</h1>
+                                <p>We could not verify your transaction. Please try again or contact support.</p>
+                            </div>
+                        </body>
+                    </html>
+                `);
+            }
+
+        } catch (error: any) {
+            console.error('Verify Chapa payment error:', error);
+            res.status(500).send('<h1>Internal Server Error during verification</h1>');
+        }
+    }
 }

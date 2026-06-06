@@ -116,6 +116,10 @@ function App() {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
 
+  // Subscription states
+  const [subscription, setSubscription] = useState(null);
+  const [isUpgrading, setIsUpgrading] = useState(false);
+
   // Settings states
   const [keyboardToggle, setKeyboardToggle] = useState(true);
   const [activeAppToggle, setActiveAppToggle] = useState(true);
@@ -223,6 +227,56 @@ function App() {
     }
   };
 
+  // Fetch subscription details
+  const fetchSubscription = async (token = authToken) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${BASE_URL}/api/v1/wellness/subscription`, {
+        headers: { 'Authorization': token }
+      });
+      if (res.ok) {
+        const subData = await res.json();
+        setSubscription(subData);
+      }
+    } catch (err) {
+      console.error('Failed to fetch subscription:', err);
+    }
+  };
+
+  // Calculate days remaining
+  const getDaysRemaining = () => {
+    if (!subscription || !subscription.current_period_end) return 0;
+    const expiry = new Date(subscription.current_period_end);
+    const diff = expiry.getTime() - Date.now();
+    return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)) + 1);
+  };
+
+  // Handle Chapa Upgrade payment session
+  const handleChapaUpgrade = async () => {
+    if (!authToken) return;
+    setIsUpgrading(true);
+    try {
+      const res = await fetch(`${BASE_URL}/api/v1/wellness/subscription/chapa/initialize`, {
+        method: 'POST',
+        headers: {
+          'Authorization': authToken,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ plan_slug: 'premium-monthly' })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.checkout_url) {
+          window.location.href = data.checkout_url;
+        }
+      }
+    } catch (err) {
+      console.error('Failed to initiate Chapa payment:', err);
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
+
   // Trigger evaluation
   const triggerInference = async () => {
     if (!authToken) return;
@@ -259,6 +313,7 @@ function App() {
   useEffect(() => {
     if (authToken) {
       fetchDashboardData(authToken);
+      fetchSubscription(authToken);
     }
   }, [authToken]);
 
@@ -999,6 +1054,7 @@ function App() {
                 {[
                   { id: 'home', label: 'Dashboard', icon: Home },
                   { id: 'analytics', label: 'Projections', icon: BarChart2 },
+                  { id: 'subscription', label: 'Subscription', icon: Sparkles },
                   { id: 'settings', label: 'Privacy Center', icon: Settings }
                 ].map((item) => {
                   const ItemIcon = item.icon;
@@ -1110,6 +1166,7 @@ function App() {
             {[
               { id: 'home', label: 'Dashboard', icon: Home },
               { id: 'analytics', label: 'Projections', icon: BarChart2 },
+              { id: 'subscription', label: 'Subscription', icon: Sparkles },
               { id: 'settings', label: 'Privacy Center', icon: Settings }
             ].map((tab) => {
               const TabIcon = tab.icon;
@@ -1382,6 +1439,82 @@ function App() {
               </button>
             </div>
 
+          </div>
+        )}
+
+        {/* -----------------------------------------------------------
+            TAB 2.5: SUBSCRIPTION (UPGRADE & PAYMENT CENTER)
+           ----------------------------------------------------------- */}
+        {currentTab === 'subscription' && (
+          <div className="space-y-8 max-w-2xl mx-auto">
+            
+            {/* Active Subscription Summary */}
+            <div className={`${cardStyle} p-8 space-y-6 text-center`}>
+              <div className="space-y-2">
+                <span className={`text-[10px] font-bold uppercase tracking-widest ${mutedStyle}`}>Account Tier</span>
+                <h2 className="text-2xl font-black uppercase tracking-wider flex items-center justify-center space-x-2">
+                  <Sparkles className="w-6 h-6 text-amber-500 animate-pulse" />
+                  <span>{subscription?.plan_name || 'Free Plan'}</span>
+                </h2>
+              </div>
+
+              <div className={`p-4 rounded-xl border max-w-sm mx-auto text-xs font-semibold ${
+                isDarkTheme ? 'bg-[#12161A] border-gray-800' : 'bg-emerald-50/30 border-emerald-100'
+              }`}>
+                <div className="flex justify-between py-2 border-b border-gray-500/10">
+                  <span className={mutedStyle}>Status:</span>
+                  <span className="font-extrabold uppercase text-green-500">
+                    {subscription?.plan_slug === 'free' || !subscription ? 'Trial (Active)' : (getDaysRemaining() > 0 ? 'Active' : 'Expired')}
+                  </span>
+                </div>
+                {subscription?.plan_slug !== 'free' && subscription && (
+                  <div className="flex justify-between py-2 border-b border-gray-500/10">
+                    <span className={mutedStyle}>Days Remaining:</span>
+                    <span className="font-extrabold uppercase text-amber-500">{getDaysRemaining()} Days Left</span>
+                  </div>
+                )}
+                <div className="flex justify-between py-2">
+                  <span className={mutedStyle}>Period End:</span>
+                  <span className={isDarkTheme ? 'text-gray-300' : 'text-[#064E3B]'}>
+                    {subscription?.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString() : 'Never'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Upgrade Card - Always available for stacking days */}
+            <div className={`${cardStyle} p-8 space-y-6 border-2 border-amber-500/20`}>
+              <div className="text-center space-y-2">
+                <h3 className="text-lg font-black tracking-wide">UPGRADE / EXTEND SUBSCRIPTION</h3>
+                <p className={`text-xs leading-relaxed max-w-md mx-auto ${mutedStyle}`}>
+                  Gain or extend unlimited access to active window app tracking, raw keystroke analysis, full historical projections, and priority Companion AI inference.
+                </p>
+              </div>
+
+              <div className="text-center py-4">
+                <span className="text-4xl font-black">ETB 299</span>
+                <span className={`text-xs uppercase font-extrabold tracking-widest ${mutedStyle}`}> / Month</span>
+              </div>
+
+              <button
+                onClick={handleChapaUpgrade}
+                disabled={isUpgrading}
+                className={`w-full py-4 rounded-xl text-xs uppercase tracking-widest shadow-md font-extrabold flex items-center justify-center space-x-2 ${
+                  isDarkTheme ? 'bg-amber-500 hover:bg-amber-600 text-black' : 'bg-amber-600 hover:bg-amber-700 text-white'
+                } disabled:opacity-50`}
+              >
+                {isUpgrading ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Sparkles className="w-4 h-4" />
+                )}
+                <span>{isUpgrading ? 'Redirecting to Chapa...' : 'Upgrade with Chapa'}</span>
+              </button>
+
+              <p className="text-[10px] text-center text-gray-500 font-semibold uppercase tracking-wider">
+                Securely processed by Chapa Payment Gateway
+              </p>
+            </div>
           </div>
         )}
 

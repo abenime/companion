@@ -112,6 +112,64 @@ class DashboardViewModel : ViewModel() {
         sleepToggle = prefs.getBoolean("sleep_toggle", false)
         val ignoredStr = prefs.getString("ignored_apps", "com.android.settings,com.google.android.apps.authenticator2,com.bitwarden.android") ?: ""
         ignoredApps = if (ignoredStr.isEmpty()) emptyList() else ignoredStr.split(",")
+
+        // Load saved session
+        val savedToken = prefs.getString("auth_token", null)
+        val userId = prefs.getString("user_id", null)
+        if (savedToken != null && userId != null) {
+            authToken = savedToken
+            val name = prefs.getString("user_name", "") ?: ""
+            val email = prefs.getString("user_email", "") ?: ""
+            val age = prefs.getInt("user_age", 25)
+            val gender = prefs.getString("user_gender", "Female") ?: "Female"
+            val workStatus = prefs.getString("user_work_status", "Full-time") ?: "Full-time"
+            val calendar = prefs.getBoolean("user_calendar_enabled", false)
+            val external = prefs.getBoolean("user_external_enabled", false)
+
+            authUser = UserDto(
+                id = userId,
+                name = name,
+                email = email,
+                profile = DemographicProfile(age, gender, workStatus),
+                connections = ConnectionsPayload(calendar, external)
+            )
+            fetchDashboardData()
+        }
+    }
+
+    private fun saveSession(context: Context, token: String, user: UserDto) {
+        val prefs = getSharedPrefs(context)
+        prefs.edit().apply {
+            putString("auth_token", token)
+            putString("user_id", user.id)
+            putString("user_name", user.name)
+            putString("user_email", user.email)
+            putInt("user_age", user.profile.age)
+            putString("user_gender", user.profile.gender)
+            putString("user_work_status", user.profile.work_status)
+            putBoolean("user_calendar_enabled", user.connections.calendar_sync_enabled)
+            putBoolean("user_external_enabled", user.connections.external_sync_enabled)
+            apply()
+        }
+    }
+
+    fun logoutUser(context: Context) {
+        val prefs = getSharedPrefs(context)
+        prefs.edit().apply {
+            remove("auth_token")
+            remove("user_id")
+            remove("user_name")
+            remove("user_email")
+            remove("user_age")
+            remove("user_gender")
+            remove("user_work_status")
+            remove("user_calendar_enabled")
+            remove("user_external_enabled")
+            apply()
+        }
+        authToken = null
+        authUser = null
+        subscriptionState = null
     }
 
     fun setKeyboardTracking(context: Context, enabled: Boolean) {
@@ -227,30 +285,50 @@ class DashboardViewModel : ViewModel() {
     }
 
     // 4. Authentication Procedures
-    fun registerUser(payload: SignupPayload) {
+    fun registerUser(context: Context, payload: SignupPayload) {
         viewModelScope.launch {
             onboardingState = OnboardingUiState.Loading
             try {
                 val response = RetrofitClient.api.register(payload)
                 authToken = "Bearer ${response.token}"
                 authUser = response.user
+                saveSession(context, authToken!!, response.user)
                 onboardingState = OnboardingUiState.Success(response.user)
                 fetchDashboardData()
+            } catch (e: retrofit2.HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                val friendlyMessage = try {
+                    val json = org.json.JSONObject(errorBody ?: "")
+                    json.getString("error")
+                } catch (jsonException: Exception) {
+                    "Registration failed. Please check your fields."
+                }
+                onboardingState = OnboardingUiState.Error(friendlyMessage)
             } catch (e: Exception) {
                 onboardingState = OnboardingUiState.Error(e.message ?: "Registration failed")
             }
         }
     }
 
-    fun loginUser(payload: LoginPayload) {
+    fun loginUser(context: Context, payload: LoginPayload) {
         viewModelScope.launch {
             onboardingState = OnboardingUiState.Loading
             try {
                 val response = RetrofitClient.api.login(payload)
                 authToken = "Bearer ${response.token}"
                 authUser = response.user
+                saveSession(context, authToken!!, response.user)
                 onboardingState = OnboardingUiState.Success(response.user)
                 fetchDashboardData()
+            } catch (e: retrofit2.HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                val friendlyMessage = try {
+                    val json = org.json.JSONObject(errorBody ?: "")
+                    json.getString("error")
+                } catch (jsonException: Exception) {
+                    "Invalid email or password."
+                }
+                onboardingState = OnboardingUiState.Error(friendlyMessage)
             } catch (e: Exception) {
                 onboardingState = OnboardingUiState.Error(e.message ?: "Authentication failed")
             }
@@ -271,9 +349,41 @@ class DashboardViewModel : ViewModel() {
                 // Read 14-day risk timelines
                 val timeline = RetrofitClient.api.getPredictionsTimeline(token)
                 timelineState = TimelineUiState.Success(timeline.timeline)
+                
+                // Fetch subscription details
+                fetchSubscription()
             } catch (e: Exception) {
                 scoresState = ScoresUiState.Error(e.message ?: "Failed to read telemetry scores")
                 timelineState = TimelineUiState.Error(e.message ?: "Failed to read timelines")
+            }
+        }
+    }
+
+    // Subscription State
+    var subscriptionState by mutableStateOf<SubscriptionResponse?>(null)
+        private set
+
+    fun fetchSubscription() {
+        val token = authToken ?: return
+        viewModelScope.launch {
+            try {
+                val sub = RetrofitClient.api.getSubscription(token)
+                subscriptionState = sub
+            } catch (e: Exception) {
+                android.util.Log.e("DashboardViewModel", "Failed to fetch subscription: ${e.message}")
+            }
+        }
+    }
+
+    fun upgradeWithChapa(planSlug: String, onCheckoutUrl: (String?) -> Unit) {
+        val token = authToken ?: return
+        viewModelScope.launch {
+            try {
+                val res = RetrofitClient.api.initializeChapaPayment(token, ChapaInitPayload(planSlug))
+                onCheckoutUrl(res.checkout_url)
+            } catch (e: Exception) {
+                android.util.Log.e("DashboardViewModel", "Failed to init Chapa: ${e.message}")
+                onCheckoutUrl(null)
             }
         }
     }

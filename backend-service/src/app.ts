@@ -26,6 +26,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/signals', signalRoutes);
 app.use('/api/v1/wellness', wellnessRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/admin', adminRoutes);
 
 // Global Error Handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -21,8 +22,13 @@ import com.wellness.companion.ui.viewmodel.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OnboardingWizard(viewModel: DashboardViewModel) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var step by remember { mutableStateOf(1) }
     var isLoginMode by remember { mutableStateOf(false) }
+
+    // Custom Error and Success Modals State
+    var errorMessageToShow by remember { mutableStateOf<String?>(null) }
+    var successMessageToShow by remember { mutableStateOf<String?>(null) }
 
     // Account inputs
     var name by remember { mutableStateOf("") }
@@ -37,6 +43,100 @@ fun OnboardingWizard(viewModel: DashboardViewModel) {
     // Connections inputs
     var calendarEnabled by remember { mutableStateOf(false) }
     var externalEnabled by remember { mutableStateOf(false) }
+
+    // Monitor onboarding state changes for modals trigger
+    val onboardingState = viewModel.onboardingState
+    LaunchedEffect(onboardingState) {
+        when (onboardingState) {
+            is OnboardingUiState.Error -> {
+                errorMessageToShow = onboardingState.message
+            }
+            is OnboardingUiState.Success -> {
+                successMessageToShow = "Account authenticated successfully! Welcome aboard."
+            }
+            else -> {}
+        }
+    }
+
+    if (errorMessageToShow != null) {
+        AlertDialog(
+            onDismissRequest = { errorMessageToShow = null },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = "Error Icon",
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(40.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Authentication Issue",
+                    fontWeight = FontWeight.Black,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.error
+                )
+            },
+            text = {
+                Text(
+                    text = errorMessageToShow!!,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { errorMessageToShow = null },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Understood", color = Color.White)
+                }
+            },
+            shape = RoundedCornerShape(16.dp),
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    }
+
+    if (successMessageToShow != null) {
+        AlertDialog(
+            onDismissRequest = { successMessageToShow = null },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = "Success Icon",
+                    tint = Color(0xFF4CAF50),
+                    modifier = Modifier.size(40.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Welcome to Companion",
+                    fontWeight = FontWeight.Black,
+                    style = MaterialTheme.typography.titleMedium
+                )
+            },
+            text = {
+                Text(
+                    text = successMessageToShow!!,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { successMessageToShow = null }
+                ) {
+                    Text("Get Started")
+                }
+            },
+            shape = RoundedCornerShape(16.dp),
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    }
 
     Box(
         modifier = Modifier
@@ -62,16 +162,6 @@ fun OnboardingWizard(viewModel: DashboardViewModel) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            val onboardingState = viewModel.onboardingState
-            if (onboardingState is OnboardingUiState.Error) {
-                Text(
-                    text = onboardingState.message,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
-            }
-
             if (isLoginMode) {
                 Text("Welcome Back", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email Address") }, modifier = Modifier.fillMaxWidth())
@@ -90,7 +180,7 @@ fun OnboardingWizard(viewModel: DashboardViewModel) {
                     Button(
                         onClick = {
                             if (email.isNotEmpty() && password.isNotEmpty()) {
-                                viewModel.loginUser(LoginPayload(email, password))
+                                viewModel.loginUser(context, LoginPayload(email, password))
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -217,7 +307,7 @@ fun OnboardingWizard(viewModel: DashboardViewModel) {
                                         profile = DemographicProfile(ageStr.toIntOrNull() ?: 25, gender, workStatus),
                                         connections = ConnectionsPayload(calendarEnabled, externalEnabled)
                                     )
-                                    viewModel.registerUser(payload)
+                                    viewModel.registerUser(context, payload)
                                 },
                                 modifier = Modifier.fillMaxWidth()
                             ) {

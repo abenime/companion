@@ -14,6 +14,8 @@ class AuthController {
             res.status(400).json({ error: 'Missing required signup fields' });
             return;
         }
+        const trimmedEmail = email.trim().toLowerCase();
+        const trimmedName = name.trim();
         const { age, gender, work_status } = profile;
         if (age === undefined || !gender || !work_status) {
             res.status(400).json({ error: 'Missing required demographic profile properties' });
@@ -25,7 +27,7 @@ class AuthController {
             await client.query('BEGIN');
             // 1. Check if user already exists
             const existingQuery = 'SELECT id FROM users WHERE email = $1';
-            const existingCheck = await client.query(existingQuery, [email]);
+            const existingCheck = await client.query(existingQuery, [trimmedEmail]);
             if (existingCheck.rows.length > 0) {
                 res.status(409).json({ error: 'User with this email already exists' });
                 await client.query('ROLLBACK');
@@ -39,7 +41,7 @@ class AuthController {
                 VALUES ($1, $2, $3)
                 RETURNING id, name, email
             `;
-            const userResult = await client.query(userInsert, [name, email, passwordHash]);
+            const userResult = await client.query(userInsert, [trimmedName, trimmedEmail, passwordHash]);
             const newUser = userResult.rows[0];
             const userId = newUser.id;
             // 4. Insert into user_profiles table (demographics)
@@ -62,6 +64,17 @@ class AuthController {
                 VALUES ($1)
             `;
             await client.query(baselineInsert, [userId]);
+            // 6.5 Pre-initialize default free trial of Premium Monthly
+            const premiumPlanResult = await client.query("SELECT id, trial_days FROM subscription_plans WHERE slug = 'premium-monthly'");
+            if (premiumPlanResult.rows.length > 0) {
+                const planId = premiumPlanResult.rows[0].id;
+                const trialDays = premiumPlanResult.rows[0].trial_days || 7;
+                const subInsert = `
+                    INSERT INTO user_subscriptions (user_id, plan_id, status, current_period_start, current_period_end)
+                    VALUES ($1, $2, 'trialing', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + ($3 || ' days')::interval)
+                `;
+                await client.query(subInsert, [userId, planId, trialDays]);
+            }
             await client.query('COMMIT');
             // 7. Sign JWT token
             const jwtSecret = process.env.JWT_SECRET || 'wellness_companion_secret_key';
@@ -93,6 +106,7 @@ class AuthController {
             res.status(400).json({ error: 'Missing email or password' });
             return;
         }
+        const trimmedEmail = email.trim().toLowerCase();
         const db = database_1.DatabaseConnection.getInstance();
         try {
             // Fetch core user credentials and sub-relations
@@ -105,7 +119,7 @@ class AuthController {
                 LEFT JOIN user_connections c ON c.user_id = u.id
                 WHERE u.email = $1
             `;
-            const result = await db.query(userQuery, [email]);
+            const result = await db.query(userQuery, [trimmedEmail]);
             if (result.rows.length === 0) {
                 res.status(401).json({ error: 'Invalid email or password' });
                 return;
