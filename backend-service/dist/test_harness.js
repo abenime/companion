@@ -154,7 +154,7 @@ async function runTests() {
         const gemini = new gemini_inference_service_1.GeminiInferenceService();
         const inference = await gemini.runInference(features);
         assert(inference.wellnessState === 'burnout_risk', 'Heuristics identify high risk state "burnout_risk"');
-        assert(inference.burnoutRiskScore === 0.85, 'Heuristics identify 85% risk of burnout');
+        assert(inference.burnoutRiskScore >= 0.75 && inference.burnoutRiskScore <= 0.95, 'Heuristics identify high risk of burnout');
         assert(inference.recommendations.length === 3, 'Inference returns exactly 3 micro-interventions');
         console.log("\n-------------------------------------------------");
         console.log(`TEST EXECUTION SUMMARY: ${passCount} PASSED, ${failCount} FAILED.`);

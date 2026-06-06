@@ -49,11 +49,216 @@ class DatabaseConnection {
             client.release();
             this.useMock = false;
             console.log('Successfully connected to PostgreSQL Relational Database.');
+            await this.initializeDatabaseSchema();
         }
         catch (err) {
             console.warn('⚠️  PostgreSQL connection failed. Operating in high-fidelity local file-based fallback simulation mode.');
             this.useMock = true;
             this.loadMockData();
+        }
+    }
+    async initializeDatabaseSchema() {
+        try {
+            const client = await this.pool.connect();
+            try {
+                console.log('Initializing database schema and checking tables...');
+                // Enable UUID extension
+                await client.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
+                // 1. Users Table
+                await client.query(`
+                    CREATE TABLE IF NOT EXISTS users (
+                        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                        name VARCHAR(255) NOT NULL,
+                        email VARCHAR(255) UNIQUE NOT NULL,
+                        password_hash VARCHAR(255) NOT NULL,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                    );
+                `);
+                // 2. User Profiles Table
+                await client.query(`
+                    CREATE TABLE IF NOT EXISTS user_profiles (
+                        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                        user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+                        age INTEGER NOT NULL,
+                        gender VARCHAR(50) NOT NULL,
+                        work_status VARCHAR(100) NOT NULL,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                        CONSTRAINT unique_user_profile UNIQUE (user_id)
+                    );
+                `);
+                // 3. User Connections Table
+                await client.query(`
+                    CREATE TABLE IF NOT EXISTS user_connections (
+                        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                        user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+                        calendar_sync_enabled BOOLEAN DEFAULT FALSE,
+                        external_sync_enabled BOOLEAN DEFAULT FALSE,
+                        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                        CONSTRAINT unique_user_connection UNIQUE (user_id)
+                    );
+                `);
+                // 4. User Baseline Parameters Table
+                await client.query(`
+                    CREATE TABLE IF NOT EXISTS user_baselines (
+                        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+                        avg_sleep_hours NUMERIC(4, 2) DEFAULT 7.5,
+                        avg_steps INTEGER DEFAULT 8000,
+                        avg_screen_time_mins INTEGER DEFAULT 240,
+                        avg_typing_speed_wpm INTEGER DEFAULT 60,
+                        avg_context_switches_per_hour INTEGER DEFAULT 15,
+                        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                        CONSTRAINT unique_user_baseline UNIQUE (user_id)
+                    );
+                `);
+                // 5. Raw Signal Logs Table
+                await client.query(`
+                    CREATE TABLE IF NOT EXISTS raw_signals (
+                        id BIGSERIAL PRIMARY KEY,
+                        user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+                        source VARCHAR(50) NOT NULL,
+                        signal_type VARCHAR(100) NOT NULL,
+                        numeric_value NUMERIC(12, 4),
+                        text_value TEXT,
+                        timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                    );
+                `);
+                // Indices for raw_signals
+                await client.query('CREATE INDEX IF NOT EXISTS idx_raw_signals_user_timestamp ON raw_signals (user_id, timestamp DESC);');
+                await client.query('CREATE INDEX IF NOT EXISTS idx_raw_signals_type_timestamp ON raw_signals (signal_type, timestamp DESC);');
+                // 6. Extracted Daily Features Table
+                await client.query(`
+                    CREATE TABLE IF NOT EXISTS daily_features (
+                        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                        user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+                        focus_score INTEGER,
+                        energy_score INTEGER,
+                        stress_score INTEGER,
+                        sleep_deficit_percent NUMERIC(5, 2),
+                        screen_time_delta_percent NUMERIC(5, 2),
+                        social_app_ratio NUMERIC(4, 3),
+                        context_switch_density NUMERIC(6, 2),
+                        step_deficit_percent NUMERIC(5, 2),
+                        measured_date DATE NOT NULL,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                        CONSTRAINT unique_user_date UNIQUE (user_id, measured_date)
+                    );
+                `);
+                await client.query('CREATE INDEX IF NOT EXISTS idx_daily_features_lookup ON daily_features (user_id, measured_date DESC);');
+                // 7. AI Inference and Recommendation Logs Table
+                await client.query(`
+                    CREATE TABLE IF NOT EXISTS ai_inferences (
+                        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                        user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+                        wellness_state VARCHAR(100) NOT NULL,
+                        burnout_risk_score NUMERIC(4, 3) NOT NULL,
+                        explanation TEXT NOT NULL,
+                        recommendations JSONB NOT NULL,
+                        confidence_score NUMERIC(4, 3) NOT NULL,
+                        inference_date DATE NOT NULL,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                    );
+                `);
+                await client.query('CREATE INDEX IF NOT EXISTS idx_ai_inferences_lookup ON ai_inferences (user_id, inference_date DESC);');
+                // 8. Subscription Plans Table
+                await client.query(`
+                    CREATE TABLE IF NOT EXISTS subscription_plans (
+                        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                        name VARCHAR(100) NOT NULL UNIQUE,
+                        slug VARCHAR(100) NOT NULL UNIQUE,
+                        price_cents INTEGER NOT NULL DEFAULT 0,
+                        currency VARCHAR(3) NOT NULL DEFAULT 'USD',
+                        billing_interval VARCHAR(20) NOT NULL,
+                        trial_days INTEGER DEFAULT 0,
+                        is_active BOOLEAN DEFAULT TRUE,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                    );
+                `);
+                // 9. User Subscriptions Table
+                await client.query(`
+                    CREATE TABLE IF NOT EXISTS user_subscriptions (
+                        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                        user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+                        plan_id UUID REFERENCES subscription_plans(id) NOT NULL,
+                        status VARCHAR(50) NOT NULL,
+                        current_period_start TIMESTAMP WITH TIME ZONE NOT NULL,
+                        current_period_end TIMESTAMP WITH TIME ZONE NOT NULL,
+                        cancel_at_period_end BOOLEAN DEFAULT FALSE,
+                        stripe_subscription_id VARCHAR(255),
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                        CONSTRAINT unique_user_subscription UNIQUE (user_id)
+                    );
+                `);
+                await client.query('CREATE INDEX IF NOT EXISTS idx_user_subscriptions_status ON user_subscriptions (status);');
+                await client.query('CREATE INDEX IF NOT EXISTS idx_user_subscriptions_dates ON user_subscriptions (current_period_end);');
+                // 10. System Settings Table
+                await client.query(`
+                    CREATE TABLE IF NOT EXISTS system_settings (
+                        key VARCHAR(255) PRIMARY KEY,
+                        value TEXT NOT NULL,
+                        description TEXT,
+                        category VARCHAR(100) DEFAULT 'general',
+                        updated_by UUID REFERENCES users(id),
+                        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                    );
+                `);
+                // --- SEED INITIAL DATA ---
+                // Seed plans
+                await client.query(`
+                    INSERT INTO subscription_plans (id, name, slug, price_cents, currency, billing_interval, trial_days, is_active)
+                    VALUES 
+                    ('f0e0d0c0-b0a0-9080-7060-504030201000', 'Free Standard', 'free', 0, 'USD', 'free', 0, true),
+                    ('f0e0d0c0-b0a0-9080-7060-504030201001', 'Premium Monthly', 'premium-monthly', 999, 'USD', 'monthly', 14, true)
+                    ON CONFLICT (slug) DO NOTHING;
+                `);
+                // Seed system settings
+                await client.query(`
+                    INSERT INTO system_settings (key, value, category, description)
+                    VALUES 
+                    ('gemini.system_prompt', 'You are a passive wellness companion. Analyze the variance of this user''s digital signals and deliver micro-interventions focused on rest, stress management, and workplace health.', 'gemini', 'System instruction prompt for Gemini AI model recommendations.'),
+                    ('telemetry.desktop.sampling_interval_seconds', '60', 'telemetry', 'Interval at which desktop-agent uploads idle and window metadata.'),
+                    ('notifications.stress_threshold_percent', '85', 'notifications', 'Stress index score (0-100) above which system triggers stress notifications.')
+                    ON CONFLICT (key) DO NOTHING;
+                `);
+                // Seed Admin User
+                await client.query(`
+                    INSERT INTO users (id, name, email, password_hash)
+                    VALUES ('9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d', 'System Admin', 'admin@wellness.com', '$2a$10$pOgOGCJluoI0Hk8aKl9.BOn0S3WQpTu9WLerOHEPaeAdG9zWotT.m')
+                    ON CONFLICT (email) DO NOTHING;
+                `);
+                await client.query(`
+                    INSERT INTO user_profiles (id, user_id, age, gender, work_status)
+                    VALUES ('p1', '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d', 35, 'other', 'full-time')
+                    ON CONFLICT (user_id) DO NOTHING;
+                `);
+                await client.query(`
+                    INSERT INTO user_connections (id, user_id, calendar_sync_enabled, external_sync_enabled)
+                    VALUES ('c1', '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d', true, true)
+                    ON CONFLICT (user_id) DO NOTHING;
+                `);
+                await client.query(`
+                    INSERT INTO user_baselines (id, user_id, avg_sleep_hours, avg_steps, avg_screen_time_mins, avg_typing_speed_wpm, avg_context_switches_per_hour)
+                    VALUES ('b1', '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d', 8, 10000, 200, 50, 10)
+                    ON CONFLICT (user_id) DO NOTHING;
+                `);
+                await client.query(`
+                    INSERT INTO user_subscriptions (id, user_id, plan_id, status, current_period_start, current_period_end)
+                    VALUES ('s1', '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d', 'f0e0d0c0-b0a0-9080-7060-504030201001', 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '30 days')
+                    ON CONFLICT (user_id) DO NOTHING;
+                `);
+                console.log('Database schema initialization completed successfully.');
+            }
+            finally {
+                client.release();
+            }
+        }
+        catch (schemaErr) {
+            console.error('⚠️ Failed to initialize database schema:', schemaErr);
         }
     }
     loadMockData() {
