@@ -9,6 +9,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const signal_routes_1 = __importDefault(require("./routes/signal.routes"));
 const wellness_routes_1 = __importDefault(require("./routes/wellness.routes"));
+const admin_routes_1 = __importDefault(require("./routes/admin.routes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
@@ -23,6 +24,7 @@ app.get('/health', (req, res) => {
 app.use('/api/v1/auth', auth_routes_1.default);
 app.use('/api/v1/signals', signal_routes_1.default);
 app.use('/api/v1/wellness', wellness_routes_1.default);
+app.use('/api/v1/admin', admin_routes_1.default);
 // Global Error Handler
 app.use((err, req, res, next) => {
     console.error('Unhandled Server Error:', err);
