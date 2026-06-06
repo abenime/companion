@@ -83,9 +83,11 @@ class DashboardViewModel : ViewModel() {
         private set
     var timelineState by mutableStateOf<TimelineUiState>(TimelineUiState.Loading)
         private set
+    var isRefreshing by mutableStateOf(false)
+        private set
 
     // 3. Dual Theme Client-side Settings (handled strictly on-device)
-    var isDarkTheme by mutableStateOf(true)
+    var isDarkTheme by mutableStateOf(false)
         private set
 
     fun toggleTheme() {
@@ -262,8 +264,21 @@ class DashboardViewModel : ViewModel() {
     var activeIntervention by mutableStateOf<String?>(null)
 
     fun handleChatQuery(prompt: String) {
+        val token = authToken
         chatMessages.add(ChatMessage("user", prompt))
         viewModelScope.launch {
+            if (token != null) {
+                try {
+                    val historyList = chatMessages.map { ChatMessageDto(it.sender, it.text) }
+                    val payload = ChatPayload(prompt, historyList)
+                    val response = RetrofitClient.api.sendChatQuery(token, payload)
+                    chatMessages.add(ChatMessage("companion", response.reply))
+                    return@launch
+                } catch (e: Exception) {
+                    android.util.Log.e("DashboardViewModel", "Gemini chat failed, fallback to heuristics: ${e.message}")
+                }
+            }
+
             kotlinx.coroutines.delay(800)
             val promptLower = prompt.lowercase()
             val reply = when {
@@ -339,6 +354,7 @@ class DashboardViewModel : ViewModel() {
     fun fetchDashboardData() {
         val token = authToken ?: return
         viewModelScope.launch {
+            isRefreshing = true
             scoresState = ScoresUiState.Loading
             timelineState = TimelineUiState.Loading
             try {
@@ -355,6 +371,8 @@ class DashboardViewModel : ViewModel() {
             } catch (e: Exception) {
                 scoresState = ScoresUiState.Error(e.message ?: "Failed to read telemetry scores")
                 timelineState = TimelineUiState.Error(e.message ?: "Failed to read timelines")
+            } finally {
+                isRefreshing = false
             }
         }
     }
@@ -375,15 +393,24 @@ class DashboardViewModel : ViewModel() {
         }
     }
 
-    fun upgradeWithChapa(planSlug: String, onCheckoutUrl: (String?) -> Unit) {
+    fun upgradeWithChapa(planSlug: String, onResult: (String?, String?) -> Unit) {
         val token = authToken ?: return
         viewModelScope.launch {
             try {
                 val res = RetrofitClient.api.initializeChapaPayment(token, ChapaInitPayload(planSlug))
-                onCheckoutUrl(res.checkout_url)
+                onResult(res.checkout_url, null)
+            } catch (e: retrofit2.HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                val friendlyMessage = try {
+                    val json = org.json.JSONObject(errorBody ?: "")
+                    json.getString("error")
+                } catch (jsonException: Exception) {
+                    "Chapa upgrade failed."
+                }
+                onResult(null, friendlyMessage)
             } catch (e: Exception) {
                 android.util.Log.e("DashboardViewModel", "Failed to init Chapa: ${e.message}")
-                onCheckoutUrl(null)
+                onResult(null, e.message ?: "Network error. Please try again.")
             }
         }
     }

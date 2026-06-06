@@ -9,6 +9,7 @@ router.post('/inference', auth_middleware_1.authenticateJWT, wellness_controller
 router.get('/predictions', auth_middleware_1.authenticateJWT, wellness_controller_1.WellnessController.getPredictionsTimeline);
 router.delete('/logs/today', auth_middleware_1.authenticateJWT, wellness_controller_1.WellnessController.deleteTodayLogs);
 router.delete('/logs/all', auth_middleware_1.authenticateJWT, wellness_controller_1.WellnessController.purgeAllLogs);
+router.post('/chat', auth_middleware_1.authenticateJWT, wellness_controller_1.WellnessController.runAIChat);
 // Subscription and Payment Endpoints
 router.get('/subscription', auth_middleware_1.authenticateJWT, wellness_controller_1.WellnessController.getSubscription);
 router.post('/subscription/chapa/initialize', auth_middleware_1.authenticateJWT, wellness_controller_1.WellnessController.initializeChapaPayment);

@@ -11,21 +11,41 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.wellness.companion.ui.viewmodel.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubscriptionScreen(viewModel: DashboardViewModel, onBack: (() -> Unit)? = null) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val sub = viewModel.subscriptionState
     var isUpgrading by remember { mutableStateOf(false) }
     var chapaCheckoutUrl by remember { mutableStateOf<String?>(null) }
+
+    val pullToRefreshState = rememberPullToRefreshState()
+    if (pullToRefreshState.isRefreshing) {
+        LaunchedEffect(true) {
+            viewModel.fetchDashboardData()
+        }
+    }
+
+    LaunchedEffect(viewModel.isRefreshing) {
+        if (viewModel.isRefreshing) {
+            pullToRefreshState.startRefresh()
+        } else {
+            pullToRefreshState.endRefresh()
+        }
+    }
 
     if (chapaCheckoutUrl != null) {
         Column(
@@ -85,203 +105,216 @@ fun SubscriptionScreen(viewModel: DashboardViewModel, onBack: (() -> Unit)? = nu
         return
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .statusBarsPadding()
-            .navigationBarsPadding()
-            .background(MaterialTheme.colorScheme.background)
+            .nestedScroll(pullToRefreshState.nestedScrollConnection)
     ) {
-        if (onBack != null) {
-            // Custom Top Bar with Back Button
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onBack) {
-                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go Back", tint = MaterialTheme.colorScheme.primary)
-                }
-                Text(
-                    text = "UPGRADES & PLANS",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 12.dp)
-                )
-            }
-
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        }
-
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .background(MaterialTheme.colorScheme.background)
         ) {
-            // Active plan status card
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            if (onBack != null) {
+                // Custom Top Bar with Back Button
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(
-                        modifier = Modifier.padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    IconButton(onClick = onBack) {
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go Back", tint = MaterialTheme.colorScheme.primary)
+                    }
+                    Text(
+                        text = "UPGRADES & PLANS",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(start = 12.dp)
+                    )
+                }
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            }
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Active plan status card
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(64.dp)
-                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), shape = CircleShape),
-                            contentAlignment = Alignment.Center
+                        Column(
+                            modifier = Modifier.padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = "Subscription Tier Icon",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(32.dp)
-                            )
-                        }
-
-                        val daysRemaining = remember(sub) {
-                            sub?.current_period_end?.let { dateStr ->
-                                try {
-                                    val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
-                                    val expiry = sdf.parse(dateStr.substring(0, 10))
-                                    val diff = (expiry?.time ?: 0L) - System.currentTimeMillis()
-                                    maxOf(0, (diff / (1000 * 60 * 60 * 24)) + 1)
-                                } catch (e: Exception) {
-                                    0L
-                                }
-                            } ?: 0L
-                        }
-
-                        val statusLabel = remember(sub, daysRemaining) {
-                            if (sub == null) "No Active Subscription"
-                            else if (sub.plan_slug == "free") "Free Tier Access"
-                            else if (daysRemaining <= 0) "Expired Plan"
-                            else if (sub.status == "trialing") "Free Trial Period"
-                            else "Premium Active"
-                        }
-
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = sub?.plan_name ?: "Free Tier",
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                            Text(
-                                text = statusLabel,
-                                fontWeight = FontWeight.Bold,
-                                color = if (daysRemaining > 0 && sub?.plan_slug != "free") Color(0xFF4CAF50) else Color.Gray,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-
-                        if (sub != null && sub.plan_slug != "free") {
-                            Card(
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                                modifier = Modifier.padding(vertical = 4.dp)
+                            Box(
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), shape = CircleShape),
+                                contentAlignment = Alignment.Center
                             ) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = "Subscription Tier Icon",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            }
+
+                            val daysRemaining = remember(sub) {
+                                sub?.current_period_end?.let { dateStr ->
+                                    try {
+                                        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+                                        val expiry = sdf.parse(dateStr.substring(0, 10))
+                                        val diff = (expiry?.time ?: 0L) - System.currentTimeMillis()
+                                        maxOf(0, (diff / (1000 * 60 * 60 * 24)) + 1)
+                                    } catch (e: Exception) {
+                                        0L
+                                    }
+                                } ?: 0L
+                            }
+
+                            val statusLabel = remember(sub, daysRemaining) {
+                                if (sub == null) "No Active Subscription"
+                                else if (sub.plan_slug == "free") "Free Tier Access"
+                                else if (daysRemaining <= 0) "Expired Plan"
+                                else if (sub.status == "trialing") "Free Trial Period"
+                                else "Premium Active"
+                            }
+
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
-                                    text = "${daysRemaining} DAYS REMAINING",
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 14.sp,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                                    text = sub?.plan_name ?: "Free Tier",
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                                Text(
+                                    text = statusLabel,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (daysRemaining > 0 && sub?.plan_slug != "free") Color(0xFF4CAF50) else Color.Gray,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+
+                            if (sub != null && sub.plan_slug != "free") {
+                                Card(
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                                    modifier = Modifier.padding(vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        text = "${daysRemaining} DAYS REMAINING",
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 14.sp,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                                    )
+                                }
+                            }
+
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Billing Cycle", fontWeight = FontWeight.Medium)
+                                Text(if (sub?.plan_slug == "free" || sub == null) "Never" else "Monthly", color = Color.Gray)
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Expiration Date", fontWeight = FontWeight.Medium)
+                                Text(
+                                    text = sub?.current_period_end?.substring(0, 10) ?: "Forever",
+                                    color = Color.Gray
                                 )
                             }
                         }
-
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("Billing Cycle", fontWeight = FontWeight.Medium)
-                            Text(if (sub?.plan_slug == "free" || sub == null) "Never" else "Monthly", color = Color.Gray)
-                        }
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("Expiration Date", fontWeight = FontWeight.Medium)
-                            Text(
-                                text = sub?.current_period_end?.substring(0, 10) ?: "Forever",
-                                color = Color.Gray
-                            )
-                        }
                     }
                 }
-            }
 
-            // Upgrade premium promo card (Always available to extend subscription)
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                // Upgrade premium promo card (Always available to extend subscription)
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
                     ) {
-                        Text(
-                            "UPGRADE TO PREMIUM",
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-
-                        Text(
-                            text = "Unlock high-fidelity telemetry analyses, infinite projections timelines, priority AI companion chats, and secure sensitive skip-lists.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                        )
-
-                        Text(
-                            text = "ETB 299 / month",
-                            fontWeight = FontWeight.Black,
-                            fontSize = 28.sp,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-
-                        Button(
-                            onClick = {
-                                isUpgrading = true
-                                viewModel.upgradeWithChapa("premium-monthly") { checkoutUrl ->
-                                    isUpgrading = false
-                                    if (checkoutUrl != null) {
-                                        chapaCheckoutUrl = checkoutUrl
-                                    }
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                contentColor = MaterialTheme.colorScheme.primaryContainer
-                            ),
-                            enabled = !isUpgrading
+                        Column(
+                            modifier = Modifier.padding(24.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            if (isUpgrading) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(24.dp),
-                                    color = MaterialTheme.colorScheme.primaryContainer
-                                )
-                            } else {
-                                Text("Upgrade with Chapa", fontWeight = FontWeight.Bold)
+                            Text(
+                                "UPGRADE TO PREMIUM",
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+
+                            Text(
+                                text = "Unlock high-fidelity telemetry analyses, infinite projections timelines, priority AI companion chats, and secure sensitive skip-lists.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+
+                            Text(
+                                text = "ETB 299 / month",
+                                fontWeight = FontWeight.Black,
+                                fontSize = 28.sp,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+
+                            Button(
+                                onClick = {
+                                    isUpgrading = true
+                                    viewModel.upgradeWithChapa("premium-monthly") { checkoutUrl, error ->
+                                        isUpgrading = false
+                                        if (checkoutUrl != null) {
+                                            chapaCheckoutUrl = checkoutUrl
+                                        } else if (error != null) {
+                                            android.widget.Toast.makeText(context, error, android.widget.Toast.LENGTH_LONG).show()
+                                        }
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.primaryContainer
+                                ),
+                                enabled = !isUpgrading
+                            ) {
+                                if (isUpgrading) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
+                                        color = MaterialTheme.colorScheme.primaryContainer
+                                    )
+                                } else {
+                                    Text("Upgrade with Chapa", fontWeight = FontWeight.Bold)
+                                }
                             }
                         }
                     }
                 }
             }
         }
+
+        PullToRefreshContainer(
+            state = pullToRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
     }
 }

@@ -9,6 +9,7 @@ router.post('/inference', authenticateJWT, WellnessController.runAIInference);
 router.get('/predictions', authenticateJWT, WellnessController.getPredictionsTimeline);
 router.delete('/logs/today', authenticateJWT, WellnessController.deleteTodayLogs);
 router.delete('/logs/all', authenticateJWT, WellnessController.purgeAllLogs);
+router.post('/chat', authenticateJWT, WellnessController.runAIChat);
 
 // Subscription and Payment Endpoints
 router.get('/subscription', authenticateJWT, WellnessController.getSubscription);
