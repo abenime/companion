@@ -22,3 +22,8 @@ Thumbs.db
 # System temp files
 tmp/
 temp/
+
+# doc cache files
+docs/__pycache__/
+docs/.pptx_render
+
