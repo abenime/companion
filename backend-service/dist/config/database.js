@@ -420,6 +420,14 @@ class DatabaseConnection {
             found.sort((a, b) => new Date(b.inference_date).getTime() - new Date(a.inference_date).getTime());
             return { rows: found, command: 'SELECT', rowCount: found.length, oid: 0, fields: [] };
         }
+        if (queryNormalized.includes('delete from subscription_plans')) {
+            const id = params[0];
+            const beforeCount = this.mockData.subscription_plans.length;
+            this.mockData.subscription_plans = this.mockData.subscription_plans.filter((p) => p.id !== id);
+            const rowCount = beforeCount - this.mockData.subscription_plans.length;
+            this.saveMockData();
+            return { rows: [], command: 'DELETE', rowCount, oid: 0, fields: [] };
+        }
         if (queryNormalized.includes('delete from raw_signals') || queryNormalized.includes('delete from ai_inferences') || queryNormalized.includes('delete from daily_features')) {
             const user_id = params[0];
             const isToday = queryNormalized.includes('current_date') || queryNormalized.includes('current_date::date');

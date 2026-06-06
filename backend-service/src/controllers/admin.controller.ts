@@ -140,6 +140,26 @@ export class AdminController {
         }
     }
 
+    public static async deletePricingPlan(req: Request, res: Response): Promise<void> {
+        const { id } = req.params;
+        const db = DatabaseConnection.getInstance();
+        try {
+            const result = await db.query(`
+                DELETE FROM subscription_plans
+                WHERE id = $1
+            `, [id]);
+            
+            if (result.rowCount === 0) {
+                res.status(404).json({ error: 'Pricing plan not found' });
+                return;
+            }
+            res.status(200).json({ success: true, message: 'Pricing plan deleted successfully.' });
+        } catch (error: any) {
+            console.error('Admin Delete Pricing Plan error:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+
     public static async getPlans(req: Request, res: Response): Promise<void> {
         const db = DatabaseConnection.getInstance();
         try {
