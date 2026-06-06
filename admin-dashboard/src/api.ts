@@ -107,6 +107,16 @@ export const api = {
     return data;
   },
 
+  async deletePlan(id: string): Promise<boolean> {
+    const res = await fetch(`${BASE_URL}/api/v1/admin/pricing/plans/${id}`, {
+      method: 'DELETE',
+      headers: getHeaders(),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to delete plan');
+    return true;
+  },
+
   async upgradeUserSubscription(userId: string, status: string, planSlug: string): Promise<boolean> {
     const res = await fetch(`${BASE_URL}/api/v1/admin/subscriptions/${userId}`, {
       method: 'PATCH',

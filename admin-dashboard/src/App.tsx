@@ -155,6 +155,20 @@ function App() {
     setPlanTrial(14);
   };
 
+  const handleDeletePlan = async (planId: string, planName: string) => {
+    if (!window.confirm(`Are you sure you want to permanently delete the billing plan "${planName}"?`)) return;
+    try {
+      await api.deletePlan(planId);
+      alert(`Billing plan "${planName}" deleted successfully.`);
+      if (editingPlanId === planId) {
+        cancelEditPlan();
+      }
+      loadAdminData();
+    } catch (e: any) {
+      alert(e.message || 'Plan deletion failed');
+    }
+  };
+
   const handleCreatePlan = async (e: React.FormEvent) => {
     e.preventDefault();
     setPlanSubmitting(true);
@@ -565,6 +579,12 @@ function App() {
                           className="bg-gray-800/80 hover:bg-gray-800 text-[#8E9F8E] border border-gray-800 hover:border-[#8E9F8E]/30 font-bold px-3 py-1.5 rounded-lg text-[9px] tracking-widest uppercase transition-all cursor-pointer inline-flex items-center gap-1"
                         >
                           Edit
+                        </button>
+                        <button 
+                          onClick={() => handleDeletePlan(p.id, p.name)}
+                          className="bg-red-950/10 hover:bg-red-950/30 text-red-400 border border-transparent hover:border-red-900/30 font-bold px-3 py-1.5 rounded-lg text-[9px] tracking-widest uppercase transition-all cursor-pointer inline-flex items-center gap-1"
+                        >
+                          Delete
                         </button>
                       </div>
                     </div>
