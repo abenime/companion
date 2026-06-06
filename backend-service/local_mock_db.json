@@ -1,0 +1,129 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Lily",
+      "email": "tlulit40@gmail.com",
+      "password_hash": "$2a$10$sXM9eijgKNN9Sg74mWgH0O4lCkSZxaNod27Sncl3Ccgh9QP7OUkOm"
+    }
+  ],
+  "user_profiles": [
+    {
+      "user_id": 1,
+      "age": 21,
+      "gender": "Female",
+      "work_status": "student"
+    }
+  ],
+  "user_connections": [
+    {
+      "user_id": 1,
+      "calendar_sync_enabled": true,
+      "external_sync_enabled": true
+    }
+  ],
+  "user_baselines": [
+    {
+      "user_id": 1,
+      "avg_sleep_hours": 7.5,
+      "avg_steps": 8000,
+      "avg_screen_time_mins": 240,
+      "avg_typing_speed_wpm": 60,
+      "avg_context_switches_per_hour": 15
+    }
+  ],
+  "daily_features": [
+    {
+      "user_id": 1,
+      "focus_score": 100,
+      "energy_score": 100,
+      "stress_score": 0,
+      "sleep_deficit_percent": 0,
+      "screen_time_delta_percent": 0,
+      "social_app_ratio": 0,
+      "context_switch_density": 0,
+      "step_deficit_percent": 0,
+      "measured_date": "2026-06-05T00:00:00.000Z"
+    }
+  ],
+  "ai_inferences": [
+    {
+      "user_id": 1,
+      "inference_date": "2026-05-31",
+      "wellness_state": "optimal_balance",
+      "burnout_risk_score": 0.17,
+      "explanation": "Telemetry and rest ratios are within safe boundaries.",
+      "recommendations": [
+        "Maintain pomodoro workspace focus."
+      ],
+      "created_at": "2026-05-31T08:35:59.720Z"
+    },
+    {
+      "user_id": 1,
+      "inference_date": "2026-06-01",
+      "wellness_state": "optimal_balance",
+      "burnout_risk_score": 0.1,
+      "explanation": "Telemetry and rest ratios are within safe boundaries.",
+      "recommendations": [
+        "Maintain pomodoro workspace focus."
+      ],
+      "created_at": "2026-06-01T08:35:59.720Z"
+    },
+    {
+      "user_id": 1,
+      "inference_date": "2026-06-02",
+      "wellness_state": "optimal_balance",
+      "burnout_risk_score": 0.12,
+      "explanation": "Telemetry and rest ratios are within safe boundaries.",
+      "recommendations": [
+        "Maintain pomodoro workspace focus."
+      ],
+      "created_at": "2026-06-02T08:35:59.720Z"
+    },
+    {
+      "user_id": 1,
+      "inference_date": "2026-06-03",
+      "wellness_state": "optimal_balance",
+      "burnout_risk_score": 0.21,
+      "explanation": "Telemetry and rest ratios are within safe boundaries.",
+      "recommendations": [
+        "Maintain pomodoro workspace focus."
+      ],
+      "created_at": "2026-06-03T08:35:59.720Z"
+    },
+    {
+      "user_id": 1,
+      "inference_date": "2026-06-04",
+      "wellness_state": "optimal_balance",
+      "burnout_risk_score": 0.29,
+      "explanation": "Telemetry and rest ratios are within safe boundaries.",
+      "recommendations": [
+        "Maintain pomodoro workspace focus."
+      ],
+      "created_at": "2026-06-04T08:35:59.720Z"
+    },
+    {
+      "user_id": 1,
+      "inference_date": "2026-06-05",
+      "wellness_state": "optimal_balance",
+      "burnout_risk_score": 0.28,
+      "explanation": "Telemetry and rest ratios are within safe boundaries.",
+      "recommendations": [
+        "Maintain pomodoro workspace focus."
+      ],
+      "created_at": "2026-06-05T08:35:59.720Z"
+    },
+    {
+      "user_id": 1,
+      "inference_date": "2026-06-06",
+      "wellness_state": "mild_overload",
+      "burnout_risk_score": 0.6,
+      "explanation": "Telemetry and rest ratios are within safe boundaries.",
+      "recommendations": [
+        "Maintain pomodoro workspace focus."
+      ],
+      "created_at": "2026-06-06T08:35:59.720Z"
+    }
+  ],
+  "raw_signals": []
+}
