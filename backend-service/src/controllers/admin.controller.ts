@@ -112,6 +112,34 @@ export class AdminController {
         }
     }
 
+    public static async updatePricingPlan(req: Request, res: Response): Promise<void> {
+        const { id } = req.params;
+        const { name, price_cents, trial_days } = req.body;
+        if (!name || price_cents === undefined || trial_days === undefined) {
+            res.status(400).json({ error: 'Missing pricing plan details for update' });
+            return;
+        }
+
+        const db = DatabaseConnection.getInstance();
+        try {
+            const result = await db.query(`
+                UPDATE subscription_plans
+                SET name = $1, price_cents = $2, trial_days = $3
+                WHERE id = $4
+                RETURNING *
+            `, [name, price_cents, trial_days, id]);
+            
+            if (result.rows.length === 0) {
+                res.status(404).json({ error: 'Pricing plan not found' });
+                return;
+            }
+            res.status(200).json(result.rows[0]);
+        } catch (error: any) {
+            console.error('Admin Update Pricing Plan error:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+
     public static async getPlans(req: Request, res: Response): Promise<void> {
         const db = DatabaseConnection.getInstance();
         try {

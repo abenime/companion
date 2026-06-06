@@ -96,6 +96,17 @@ export const api = {
     return data;
   },
 
+  async updatePlan(id: string, plan: { name: string; price_cents: number; trial_days: number }): Promise<Plan> {
+    const res = await fetch(`${BASE_URL}/api/v1/admin/pricing/plans/${id}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(plan),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to update plan');
+    return data;
+  },
+
   async upgradeUserSubscription(userId: string, status: string, planSlug: string): Promise<boolean> {
     const res = await fetch(`${BASE_URL}/api/v1/admin/subscriptions/${userId}`, {
       method: 'PATCH',

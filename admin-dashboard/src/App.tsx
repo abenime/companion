@@ -10,9 +10,7 @@ import {
   Plus, 
   DollarSign, 
   Activity, 
-  Terminal,
   LogOut,
-  Sliders,
   CheckCircle,
   AlertTriangle
 } from 'lucide-react';
@@ -28,7 +26,7 @@ function App() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Tab State
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'plans' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'plans'>('overview');
 
   // Business Data State
   const [users, setUsers] = useState<User[]>([]);
@@ -38,16 +36,13 @@ function App() {
   const [error, setError] = useState('');
 
   // Form States
+  const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
   const [planName, setPlanName] = useState('');
   const [planPrice, setPlanPrice] = useState(999);
   const [planTrial, setPlanTrial] = useState(14);
   const [planSubmitting, setPlanSubmitting] = useState(false);
 
-  // System Settings local form states
-  const [settingPrompt, setSettingPrompt] = useState('');
-  const [settingInterval, setSettingInterval] = useState('60');
-  const [settingStress, setSettingStress] = useState('85');
-  const [settingSubmitting, setSettingSubmitting] = useState(false);
+
 
   // Load Admin Data when authenticated
   useEffect(() => {
@@ -69,12 +64,7 @@ function App() {
       setSettings(fetchedSettings);
       setPlans(fetchedPlans);
 
-      // Seed form values from live settings
-      fetchedSettings.forEach(s => {
-        if (s.key === 'gemini.system_prompt') setSettingPrompt(s.value);
-        if (s.key === 'telemetry.desktop.sampling_interval_seconds') setSettingInterval(s.value);
-        if (s.key === 'notifications.stress_threshold_percent') setSettingStress(s.value);
-      });
+
     } catch (e: any) {
       console.error(e);
       setError('Connection refused. Ensure the backend-service is running on port 3000.');
@@ -151,49 +141,57 @@ function App() {
     }
   };
 
+  const startEditPlan = (plan: Plan) => {
+    setEditingPlanId(plan.id);
+    setPlanName(plan.name);
+    setPlanPrice(plan.price_cents);
+    setPlanTrial(plan.trial_days);
+  };
+
+  const cancelEditPlan = () => {
+    setEditingPlanId(null);
+    setPlanName('');
+    setPlanPrice(999);
+    setPlanTrial(14);
+  };
+
   const handleCreatePlan = async (e: React.FormEvent) => {
     e.preventDefault();
     setPlanSubmitting(true);
-    const slug = planName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
     try {
-      await api.createPlan({
-        name: planName,
-        slug,
-        price_cents: planPrice,
-        currency: 'USD',
-        billing_interval: 'monthly',
-        trial_days: planTrial
-      });
-      alert(`Billing plan "${planName}" deployed successfully!`);
-      setPlanName('');
-      setPlanPrice(999);
-      setPlanTrial(14);
+      if (editingPlanId) {
+        await api.updatePlan(editingPlanId, {
+          name: planName,
+          price_cents: planPrice,
+          trial_days: planTrial
+        });
+        alert(`Billing plan "${planName}" updated successfully!`);
+        cancelEditPlan();
+      } else {
+        const slug = planName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        await api.createPlan({
+          name: planName,
+          slug,
+          price_cents: planPrice,
+          currency: 'USD',
+          billing_interval: 'monthly',
+          trial_days: planTrial
+        });
+        alert(`Billing plan "${planName}" deployed successfully!`);
+        setPlanName('');
+        setPlanPrice(999);
+        setPlanTrial(14);
+      }
       loadAdminData();
     } catch (e: any) {
-      alert(e.message || 'Plan creation failed');
+      alert(e.message || (editingPlanId ? 'Plan update failed' : 'Plan creation failed'));
     } finally {
       setPlanSubmitting(false);
     }
   };
 
-  const handleSaveSettings = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSettingSubmitting(true);
-    try {
-      await api.updateSettings([
-        { key: 'gemini.system_prompt', value: settingPrompt },
-        { key: 'telemetry.desktop.sampling_interval_seconds', value: settingInterval },
-        { key: 'notifications.stress_threshold_percent', value: settingStress }
-      ]);
-      alert('Live system configuration updated successfully!');
-      loadAdminData();
-    } catch (e: any) {
-      alert(e.message || 'Failed to save settings');
-    } finally {
-      setSettingSubmitting(false);
-    }
-  };
+
 
   // 1. LOGIN UI
   if (!isLoggedIn) {
@@ -286,13 +284,6 @@ function App() {
           >
             <CreditCard className="w-4 h-4" />
             <span>Dynamic Plans</span>
-          </button>
-          <button 
-            onClick={() => setActiveTab('settings')}
-            className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-all ${activeTab === 'settings' ? 'bg-[#8E9F8E]/10 text-[#8E9F8E]' : 'text-gray-400 hover:bg-gray-800/30 hover:text-gray-200'}`}
-          >
-            <Sliders className="w-4 h-4" />
-            <span>Settings Overrides</span>
           </button>
         </nav>
 
@@ -484,7 +475,9 @@ function App() {
             <div className="bg-[#1C2229] border border-gray-800 p-6 rounded-2xl space-y-4 col-span-1 h-fit">
               <div className="flex items-center space-x-2 pb-2 border-b border-gray-800/50">
                 <Plus className="w-4 h-4 text-[#8E9F8E]" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">Generate New Billing Plan</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                  {editingPlanId ? 'Edit Billing Plan' : 'Generate New Billing Plan'}
+                </h3>
               </div>
               <form onSubmit={handleCreatePlan} className="space-y-4">
                 <div>
@@ -522,13 +515,24 @@ function App() {
                     />
                   </div>
                 </div>
-                <button 
-                  type="submit" 
-                  disabled={planSubmitting}
-                  className="w-full bg-[#8E9F8E] hover:bg-[#7D8F7D] disabled:bg-gray-700 disabled:text-gray-400 text-[#12161A] font-bold py-2.5 rounded-lg text-xs tracking-wider uppercase transition-all shadow-lg"
-                >
-                  {planSubmitting ? 'Deploying...' : 'Deploy Plan'}
-                </button>
+                <div className="flex gap-2">
+                  <button 
+                    type="submit" 
+                    disabled={planSubmitting}
+                    className="flex-1 bg-[#8E9F8E] hover:bg-[#7D8F7D] disabled:bg-gray-700 disabled:text-gray-400 text-[#12161A] font-bold py-2.5 rounded-lg text-xs tracking-wider uppercase transition-all shadow-lg"
+                  >
+                    {editingPlanId ? (planSubmitting ? 'Updating...' : 'Update Plan') : (planSubmitting ? 'Deploying...' : 'Deploy Plan')}
+                  </button>
+                  {editingPlanId && (
+                    <button 
+                      type="button"
+                      onClick={cancelEditPlan}
+                      className="bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-2.5 px-4 rounded-lg text-xs tracking-wider uppercase transition-all"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
               </form>
             </div>
 
@@ -551,9 +555,17 @@ function App() {
                         <div className="font-bold text-xs text-gray-200 uppercase tracking-wider">{p.name}</div>
                         <div className="font-mono text-[9px] text-gray-500">{p.slug}</div>
                       </div>
-                      <div className="text-right">
-                        <div className="font-extrabold text-sm text-[#8E9F8E]">${(p.price_cents / 100).toFixed(2)}</div>
-                        <div className="text-[10px] text-gray-500 uppercase font-semibold">{p.trial_days} Days Trial</div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <div className="font-extrabold text-sm text-[#8E9F8E]">${(p.price_cents / 100).toFixed(2)}</div>
+                          <div className="text-[10px] text-gray-500 uppercase font-semibold">{p.trial_days} Days Trial</div>
+                        </div>
+                        <button 
+                          onClick={() => startEditPlan(p)}
+                          className="bg-gray-800/80 hover:bg-gray-800 text-[#8E9F8E] border border-gray-800 hover:border-[#8E9F8E]/30 font-bold px-3 py-1.5 rounded-lg text-[9px] tracking-widest uppercase transition-all cursor-pointer inline-flex items-center gap-1"
+                        >
+                          Edit
+                        </button>
                       </div>
                     </div>
                   ))
@@ -563,63 +575,6 @@ function App() {
 
           </div>
         )}
-
-        {/* TAB 4: SYSTEM RUNTIME OVERRIDES */}
-        {activeTab === 'settings' && (
-          <div className="bg-[#1C2229] border border-gray-800 p-6 rounded-2xl space-y-6 max-w-4xl">
-            <div className="flex items-center space-x-2 pb-2 border-b border-gray-800/50">
-              <Terminal className="w-4 h-4 text-[#8E9F8E]" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">System Overrides (Runtime Variables)</h3>
-            </div>
-
-            <form onSubmit={handleSaveSettings} className="space-y-6">
-              <div className="space-y-1">
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Gemini Core prompt System Instructions</label>
-                <p className="text-[10px] text-gray-500 mb-2">Dictates AI companion scoring logic, Coping Recommendations framing, and heuristics limits.</p>
-                <textarea 
-                  rows={6} 
-                  value={settingPrompt}
-                  onChange={(e) => setSettingPrompt(e.target.value)}
-                  className="w-full bg-[#12161A] border border-gray-800 rounded-lg px-4 py-2.5 text-xs text-gray-300 focus:outline-none focus:border-[#8E9F8E] transition-all font-mono leading-relaxed"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-1">
-                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Desktop sampling Rate (seconds)</label>
-                  <p className="text-[10px] text-gray-500 mb-1">Frequency of desktop-agent signals uploads.</p>
-                  <input 
-                    type="number" 
-                    value={settingInterval}
-                    onChange={(e) => setSettingInterval(e.target.value)}
-                    className="w-full bg-[#12161A] border border-gray-800 rounded-lg px-4 py-2.5 text-xs text-gray-300 focus:outline-none focus:border-[#8E9F8E] transition-all"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Stress Notification Limit (%)</label>
-                  <p className="text-[10px] text-gray-500 mb-1">Alert triggers when composite stress index breaches limit.</p>
-                  <input 
-                    type="number" 
-                    value={settingStress}
-                    onChange={(e) => setSettingStress(e.target.value)}
-                    className="w-full bg-[#12161A] border border-gray-800 rounded-lg px-4 py-2.5 text-xs text-gray-300 focus:outline-none focus:border-[#8E9F8E] transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-2 border-t border-gray-800/50 flex justify-end">
-                <button 
-                  type="submit" 
-                  disabled={settingSubmitting}
-                  className="bg-[#8E9F8E] hover:bg-[#7D8F7D] disabled:bg-gray-700 disabled:text-gray-400 text-[#12161A] font-bold px-6 py-2.5 rounded-lg text-xs tracking-wider uppercase transition-all shadow-md"
-                >
-                  {settingSubmitting ? 'Saving...' : 'Save Live Configuration'}
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
       </main>
 
     </div>

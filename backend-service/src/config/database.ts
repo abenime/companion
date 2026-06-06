@@ -101,12 +101,10 @@ export class DatabaseConnection {
         // Seed default Subscription Plans
         const planFree = 'f0e0d0c0-b0a0-9080-7060-504030201000';
         const planPremium = 'f0e0d0c0-b0a0-9080-7060-504030201001';
-        const planEnterprise = 'f0e0d0c0-b0a0-9080-7060-504030201002';
 
         this.memSubscriptionPlans = [
             { id: planFree, name: 'Free Standard', slug: 'free', price_cents: 0, currency: 'USD', billing_interval: 'free', trial_days: 0, is_active: true, created_at: new Date('2026-01-01') },
-            { id: planPremium, name: 'Premium Monthly', slug: 'premium-monthly', price_cents: 999, currency: 'USD', billing_interval: 'monthly', trial_days: 14, is_active: true, created_at: new Date('2026-01-01') },
-            { id: planEnterprise, name: 'Corporate Wellness', slug: 'corporate-wellness', price_cents: 499, currency: 'USD', billing_interval: 'monthly', trial_days: 30, is_active: true, created_at: new Date('2026-01-01') }
+            { id: planPremium, name: 'Premium Monthly', slug: 'premium-monthly', price_cents: 999, currency: 'USD', billing_interval: 'monthly', trial_days: 14, is_active: true, created_at: new Date('2026-01-01') }
         ];
 
         // Seed default User Subscriptions
@@ -411,6 +409,21 @@ export class DatabaseConnection {
             if (setting) {
                 setting.value = value;
                 rows.push(setting);
+            }
+            return { rows, command: 'UPDATE', rowCount: rows.length, oid: 0, fields: [] };
+        }
+
+        if (queryNormalized.includes('update subscription_plans')) {
+            const name = params[0];
+            const price_cents = params[1];
+            const trial_days = params[2];
+            const id = params[3];
+            const plan = this.memSubscriptionPlans.find(p => p.id === id);
+            if (plan) {
+                if (name !== undefined) plan.name = name;
+                if (price_cents !== undefined) plan.price_cents = price_cents;
+                if (trial_days !== undefined) plan.trial_days = trial_days;
+                rows.push(plan);
             }
             return { rows, command: 'UPDATE', rowCount: rows.length, oid: 0, fields: [] };
         }

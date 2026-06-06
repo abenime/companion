@@ -12,6 +12,7 @@ router.delete('/users/:id/purge', AdminController.purgeUser);
 router.get('/settings', AdminController.getSettings);
 router.put('/settings', AdminController.updateSettings);
 router.post('/pricing/plans', AdminController.createPricingPlan);
+router.put('/pricing/plans/:id', AdminController.updatePricingPlan);
 router.get('/pricing/plans', AdminController.getPlans);
 router.patch('/subscriptions/:id', AdminController.updateUserSubscription);
 
