@@ -48,7 +48,7 @@ ChartJS.register(
   Filler
 );
 
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://companion-bfmp.onrender.com';
 
 function App() {
   // Theme state

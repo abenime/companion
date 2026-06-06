@@ -1,6 +1,6 @@
 import type { User, Plan, SystemSetting } from './types';
 
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://companion-bfmp.onrender.com';
 
 let authToken = localStorage.getItem('admin_token') || '';
 
