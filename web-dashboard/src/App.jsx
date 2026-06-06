@@ -52,7 +52,7 @@ const BASE_URL = 'http://localhost:3000';
 
 function App() {
   // Theme state
-  const [isDarkTheme, setIsDarkTheme] = useState(true);
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
 
   // Auth states
   const [authToken, setAuthToken] = useState(localStorage.getItem('auth_token') || null);
@@ -148,40 +148,41 @@ function App() {
 
   // Refs
   const chatEndRef = useRef(null);
+  const chatInputRef = useRef(null);
 
   // -------------------------------------------------------------
   // THEME ACCENT SYSTEM FOR EMERALD LIGHT MODE / ZEN DARK MODE
   // -------------------------------------------------------------
-  const bgStyle = isDarkTheme ? 'bg-[#12161A] text-[#E2E8F0]' : 'bg-[#F4FBF7] text-[#064E3B]';
-  const cardStyle = isDarkTheme ? 'bg-[#1C2229] border border-gray-800' : 'bg-white border border-emerald-100 shadow-sm rounded-2xl';
-  const textStyle = isDarkTheme ? 'text-slate-200' : 'text-[#064E3B]';
-  const mutedStyle = isDarkTheme ? 'text-gray-400' : 'text-emerald-800/70';
-  const borderStyle = isDarkTheme ? 'border-gray-800/80' : 'border-emerald-100';
+  const bgStyle = isDarkTheme ? 'bg-[#12161A] text-[#E2E8F0]' : 'bg-[#d6dbd5] text-[#3b533b]';
+  const cardStyle = isDarkTheme ? 'bg-[#1C2229] border border-gray-800' : 'bg-white border border-[#3b533b]/20 shadow-sm rounded-2xl';
+  const textStyle = isDarkTheme ? 'text-slate-200' : 'text-[#3b533b]';
+  const mutedStyle = isDarkTheme ? 'text-gray-400' : 'text-[#3b533b]/70';
+  const borderStyle = isDarkTheme ? 'border-gray-800/80' : 'border-[#3b533b]/20';
   const inputStyle = isDarkTheme 
-    ? 'bg-[#12161A] border-gray-800 text-slate-200 focus:border-[#8E9F8E]' 
-    : 'bg-white border-emerald-200 text-[#064E3B] focus:border-[#10B981]';
+    ? 'bg-[#1C2229] border border-gray-700 text-slate-200 focus:border-[#8E9F8E]' 
+    : 'bg-white border-[#3b533b]/30 text-[#3b533b] focus:border-[#3b533b]';
   
   // Interactive Buttons
   const primaryBtn = isDarkTheme 
     ? 'bg-[#8E9F8E] hover:bg-[#7D8F7D] text-[#12161A] font-extrabold uppercase transition-all' 
-    : 'bg-[#10B981] hover:bg-[#059669] text-white font-extrabold uppercase transition-all shadow-sm';
+    : 'bg-[#3b533b] hover:bg-[#2d3f2d] text-white font-extrabold uppercase transition-all shadow-sm';
   const secondaryBtn = isDarkTheme 
     ? 'bg-[#12161A] border border-gray-800 hover:border-[#8E9F8E] hover:text-[#8E9F8E] text-[#8E9F8E] font-bold uppercase transition-all' 
-    : 'bg-emerald-50/70 border border-emerald-200 hover:border-[#10B981] hover:text-[#10B981] text-[#047857] font-bold uppercase transition-all';
+    : 'bg-[#3b533b]/10 border border-[#3b533b]/30 hover:border-[#3b533b] hover:text-[#3b533b] text-[#3b533b] font-bold uppercase transition-all';
   
   // Color highlights
-  const accentText = isDarkTheme ? 'text-[#8E9F8E]' : 'text-[#059669]';
-  const accentBg = isDarkTheme ? 'bg-[#8E9F8E]/10' : 'bg-[#10B981]/10';
+  const accentText = isDarkTheme ? 'text-[#8E9F8E]' : 'text-[#3b533b]';
+  const accentBg = isDarkTheme ? 'bg-[#8E9F8E]/10' : 'bg-[#3b533b]/10';
   const warningText = isDarkTheme ? 'text-[#D17E73]' : 'text-rose-600';
   const badgeStyle = isDarkTheme 
     ? 'text-[#8E9F8E] bg-[#12161A] border border-gray-800/60 font-bold' 
-    : 'text-[#059669] bg-emerald-50 border border-emerald-100 font-bold';
+    : 'text-[#3b533b] bg-[#3b533b]/10 border border-[#3b533b]/20 font-bold';
   
   // Concentric Orbit Visuals
-  const orbitRing1 = isDarkTheme ? 'border-[#8E9F8E]/30' : 'border-[#10B981]/30';
-  const orbitRing2 = isDarkTheme ? 'border-[#8E9F8E]/50' : 'border-[#10B981]/50';
-  const orbitCore = isDarkTheme ? 'bg-[#8E9F8E]/15' : 'bg-[#10B981]/15';
-  const orbitHeart = isDarkTheme ? 'text-[#8E9F8E]' : 'text-[#10B981]';
+  const orbitRing1 = isDarkTheme ? 'border-[#8E9F8E]/30' : 'border-[#3b533b]/30';
+  const orbitRing2 = isDarkTheme ? 'border-[#8E9F8E]/50' : 'border-[#3b533b]/50';
+  const orbitCore = isDarkTheme ? 'bg-[#8E9F8E]/15' : 'bg-[#3b533b]/15';
+  const orbitHeart = isDarkTheme ? 'text-[#8E9F8E]' : 'text-[#3b533b]';
 
   // Fetch Dashboard data
   const fetchDashboardData = async (token = authToken) => {
@@ -528,7 +529,7 @@ function App() {
     }
   }, [activeIntervention]);
 
-  // Inline CSS animations for breathing pulsing orbits
+  // Inline CSS animations for breathing pulsing orbits and custom scrollbars
   useEffect(() => {
     const styleSheet = document.createElement("style");
     styleSheet.type = "text/css";
@@ -541,12 +542,22 @@ function App() {
       .animate-breathing-orbit {
         animation: breatheInhaleExhale 8s ease-in-out infinite;
       }
+      /* Custom scrollbar to make sure the chat scroll is invisible but scrollable */
+      .custom-sidebar-scrollbar::-webkit-scrollbar {
+        width: 0px !important;
+        display: none !important;
+      }
+      /* Standard scrollbar for other browsers */
+      .custom-sidebar-scrollbar {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none; /* IE and Edge */
+      }
     `;
     document.head.appendChild(styleSheet);
     return () => {
       document.head.removeChild(styleSheet);
     };
-  }, []);
+  }, [isDarkTheme]);
 
   // Prepare line chart data
   const drawLineChartData = () => {
@@ -582,10 +593,10 @@ function App() {
       legend: { display: false },
       tooltip: {
         backgroundColor: isDarkTheme ? '#1C2229' : '#FFFFFF',
-        borderColor: isDarkTheme ? '#374151' : '#10B981',
+        borderColor: isDarkTheme ? '#374151' : '#3b533b',
         borderWidth: 1,
-        titleColor: isDarkTheme ? '#94A3B8' : '#047857',
-        bodyColor: isDarkTheme ? '#E2E8F0' : '#064E3B',
+        titleColor: isDarkTheme ? '#94A3B8' : '#3b533b',
+        bodyColor: isDarkTheme ? '#E2E8F0' : '#3b533b',
         padding: 10,
         displayColors: false
       }
@@ -594,12 +605,12 @@ function App() {
       y: {
         min: 0,
         max: 100,
-        grid: { color: isDarkTheme ? 'rgba(255, 255, 255, 0.05)' : 'rgba(16, 185, 129, 0.05)' },
-        ticks: { color: isDarkTheme ? '#94A3B8' : '#047857', font: { size: 10 } }
+        grid: { color: isDarkTheme ? 'rgba(255, 255, 255, 0.05)' : 'rgba(59, 83, 59, 0.05)' },
+        ticks: { color: isDarkTheme ? '#94A3B8' : '#3b533b', font: { size: 10 } }
       },
       x: {
         grid: { display: false },
-        ticks: { color: isDarkTheme ? '#94A3B8' : '#047857', font: { size: 10 } }
+        ticks: { color: isDarkTheme ? '#94A3B8' : '#3b533b', font: { size: 10 } }
       }
     }
   };
@@ -623,14 +634,14 @@ function App() {
           {/* Meditative Pulsing Ring */}
           <div className="relative flex items-center justify-center h-72">
             <div
-              className={`absolute w-44 h-44 rounded-full transition-all duration-[4000ms] ease-in-out flex items-center justify-center ${isDarkTheme ? 'bg-[#8E9F8E]' : 'bg-[#10B981]'}`}
+              className={`absolute w-44 h-44 rounded-full transition-all duration-[4000ms] ease-in-out flex items-center justify-center ${isDarkTheme ? 'bg-[#8E9F8E]' : 'bg-[#3b533b]'}`}
               style={{
                 transform: breathingPulse === 1 ? 'scale(1.5)' : 'scale(0.9)',
                 opacity: breathingPulse === 1 ? '0.35' : '0.15'
               }}
             />
-            <div className="absolute w-24 h-24 rounded-full bg-[#10B981]/20 flex items-center justify-center">
-              <Heart className={`w-10 h-10 fill-[#10B981] ${isDarkTheme ? 'text-[#8E9F8E] fill-[#8E9F8E]' : 'text-[#10B981] fill-[#10B981]'}`} />
+            <div className="absolute w-24 h-24 rounded-full bg-[#3b533b]/20 flex items-center justify-center">
+              <Heart className={`w-10 h-10 fill-[#3b533b] ${isDarkTheme ? 'text-[#8E9F8E] fill-[#8E9F8E]' : 'text-[#3b533b] fill-[#3b533b]'}`} />
             </div>
           </div>
 
@@ -650,555 +661,484 @@ function App() {
     );
   }
 
-  // 2. Chat Overlay Client
-  if (showChat) {
-    return (
-      <div className={`fixed inset-0 z-40 flex flex-col min-h-screen ${bgStyle}`}>
-        {/* Chat Header */}
-        <header className={`px-6 py-4 border-b flex items-center ${isDarkTheme ? 'bg-[#1C2229] border-gray-800' : 'bg-white border-emerald-100 shadow-sm'}`}>
-          <button
-            onClick={() => setShowChat(false)}
-            className={`p-2 -ml-2 transition-all rounded-full ${isDarkTheme ? 'text-[#8E9F8E] hover:bg-gray-800/30' : 'text-[#10B981] hover:bg-emerald-50'}`}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div className="ml-3">
-            <h2 className={`text-sm font-bold tracking-widest uppercase ${accentText}`}>AI Companion Chat</h2>
-            <p className={`text-[10px] uppercase font-bold tracking-wider ${mutedStyle}`}>Passive Telemetry Diagnostic Broker</p>
-          </div>
-        </header>
-
-        {/* Message logs */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4 max-w-4xl mx-auto w-full">
-          {chatMessages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center p-8 text-gray-500 space-y-4 mt-12">
-              <div className={`p-4 rounded-full border ${cardStyle}`}>
-                <Sparkles className={`w-8 h-8 ${accentText}`} />
-              </div>
-              <p className={`text-sm max-w-sm leading-relaxed font-semibold ${mutedStyle}`}>
-                Ask the companion details about your cognitive focus patterns, steps deficits, sleep offsets, or request a coping strategy.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md w-full pt-4">
-                <button
-                  onClick={() => setChatInput("Why was my focus score lower today?")}
-                  className={`${cardStyle} p-4 rounded-xl text-left text-xs font-bold hover:border-[#10B981] transition-all`}
-                >
-                  "Why was my focus score lower today?"
-                </button>
-                <button
-                  onClick={() => setChatInput("Check my 7-day burnout risk probability")}
-                  className={`${cardStyle} p-4 rounded-xl text-left text-xs font-bold hover:border-[#10B981] transition-all`}
-                >
-                  "Check my 7-day burnout risk probability"
-                </button>
-              </div>
-            </div>
-          ) : (
-            chatMessages.map((msg, i) => {
-              const isUser = msg.sender === 'user';
-              return (
-                <div key={i} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-                  <div
-                    className={`max-w-[80%] rounded-2xl p-4 text-xs font-medium shadow-sm leading-relaxed ${
-                      isUser
-                        ? (isDarkTheme ? 'bg-[#8E9F8E] text-[#12161A] rounded-tr-none' : 'bg-[#10B981] text-white rounded-tr-none shadow-md')
-                        : (isDarkTheme ? 'bg-[#1C2229] border border-gray-800 text-gray-300 rounded-tl-none' : 'bg-white border border-emerald-100 text-[#064E3B] rounded-tl-none shadow-sm')
-                    }`}
-                  >
-                    {msg.text}
-                  </div>
-                </div>
-              );
-            })
-          )}
-          <div ref={chatEndRef} />
-        </div>
-
-        {/* Chat input */}
-        <form onSubmit={handleChatSubmit} className={`p-4 border-t flex justify-center ${isDarkTheme ? 'bg-[#1C2229] border-gray-800' : 'bg-white border-emerald-100'}`}>
-          <div className="flex w-full max-w-4xl space-x-3 items-center">
-            <input
-              type="text"
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              placeholder="e.g. why was my focus score lower today?"
-              className={`flex-1 rounded-full px-5 py-3.5 text-xs focus:outline-none transition-all shadow-inner ${inputStyle}`}
-            />
-            <button
-              type="submit"
-              className={`${primaryBtn} p-3.5 rounded-full shadow-md transition-all flex items-center justify-center`}
-            >
-              <Send className="w-5 h-5 fill-current" />
-            </button>
-          </div>
-        </form>
-      </div>
-    );
-  }
+  // 2. Chat Navigation and Focus Handler
+  const handleFocusChat = () => {
+    setCurrentTab('chat');
+    setTimeout(() => {
+      chatInputRef.current?.focus();
+    }, 100);
+  };
 
   // 3. Unauthenticated State (Wizard Onboarding or Login)
   if (!authToken) {
     return (
-      <div className={`min-h-screen flex items-center justify-center p-6 ${bgStyle}`}>
-        <div className={`border p-8 rounded-2xl w-full max-w-md shadow-2xl space-y-6 ${cardStyle}`}>
-          <div className="text-center space-y-2">
-            <h1 className={`text-4xl font-extrabold tracking-wider ${accentText}`}>COMPANION</h1>
-            <p className={`text-[10px] uppercase tracking-widest font-extrabold ${mutedStyle}`}>On-Device Cognitive Health Broker</p>
-          </div>
+      <div className={`min-h-screen flex items-center justify-center p-4 md:p-8 ${bgStyle}`}>
+        {/* Main Two-Pane Split Container Card */}
+        <div className={`w-full max-w-4xl grid grid-cols-1 md:grid-cols-12 rounded-3xl overflow-hidden shadow-2xl border ${cardStyle}`}>
+          
+          {/* Left Visual Panel - 5 Columns */}
+          <div className={`hidden md:flex md:col-span-5 flex-col justify-between p-8 text-white relative overflow-hidden ${
+            isDarkTheme ? 'bg-gradient-to-br from-[#1C2229] to-[#12161A]' : 'bg-gradient-to-br from-[#3b533b] to-[#2d3f2d]'
+          }`}>
+            {/* Absolute Background Accent Shapes */}
+            <div className="absolute top-0 right-0 w-48 h-48 rounded-full bg-white/5 blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-white/5 blur-3xl pointer-events-none" />
 
-          {/* Form navigation tabs */}
-          <div className={`flex border-b ${borderStyle}`}>
-            <button
-              onClick={() => {
-                setAuthMode('login');
-                setRegStep(1);
-              }}
-              className={`w-1/2 pb-3 text-center text-xs tracking-widest font-extrabold border-b-2 transition-all ${
-                authMode === 'login'
-                  ? (isDarkTheme ? 'border-[#8E9F8E] text-[#8E9F8E]' : 'border-[#10B981] text-[#10B981]')
-                  : 'border-transparent text-gray-500 hover:text-gray-300'
-              }`}
-            >
-              LOGIN
-            </button>
-            <button
-              onClick={() => {
-                setAuthMode('register');
-                setRegStep(1);
-              }}
-              className={`w-1/2 pb-3 text-center text-xs tracking-widest font-extrabold border-b-2 transition-all ${
-                authMode === 'register'
-                  ? (isDarkTheme ? 'border-[#8E9F8E] text-[#8E9F8E]' : 'border-[#10B981] text-[#10B981]')
-                  : 'border-transparent text-gray-500 hover:text-gray-300'
-              }`}
-            >
-              REGISTER
-            </button>
-          </div>
+            {/* Brand Header */}
+            <div className="flex items-center space-x-2 shrink-0 z-10">
+              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center font-black text-sm text-white border border-white/20 shadow-md">C</div>
+              <span className="text-sm font-black tracking-widest uppercase">Companion</span>
+            </div>
 
-          {authMode === 'login' ? (
-            /* LOGIN SCREEN */
-            <form onSubmit={handleLoginSubmit} className="space-y-4">
-              <div>
-                <label className={`block text-xs font-bold uppercase tracking-wider mb-1 ${mutedStyle}`}>Email Address</label>
-                <input
-                  type="email"
-                  required
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  className={`w-full rounded-lg px-4 py-3 text-sm focus:outline-none transition-all ${inputStyle}`}
-                />
-              </div>
-              <div>
-                <label className={`block text-xs font-bold uppercase tracking-wider mb-1 ${mutedStyle}`}>Password</label>
-                <input
-                  type="password"
-                  required
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  className={`w-full rounded-lg px-4 py-3 text-sm focus:outline-none transition-all ${inputStyle}`}
-                />
-              </div>
-              <button
-                type="submit"
-                className={`w-full py-4 rounded-lg text-xs font-extrabold tracking-widest uppercase transition-all shadow-lg ${primaryBtn}`}
-              >
-                Authenticate
-              </button>
-            </form>
-          ) : (
-            /* SIGNUP ONBOARDING WIZARD (Just like Kotlin App) */
-            <div className="space-y-6">
-              <div className={`flex justify-between items-center px-4 py-3 rounded-lg border ${badgeStyle}`}>
-                <span className="text-[10px] font-bold uppercase tracking-wider">Onboarding Session</span>
-                <span className="text-xs font-extrabold">Step {regStep} of 3</span>
-              </div>
-
-              {regStep === 1 && (
-                /* Step 1: Account Creation */
-                <div className="space-y-4">
-                  <div className="space-y-1">
-                    <h3 className={`text-sm font-extrabold ${textStyle}`}>Create Account Credentials</h3>
-                    <p className={`text-[11px] ${mutedStyle}`}>Provide identifiers to build local cognitive patterns.</p>
-                  </div>
-                  <div className="space-y-3">
-                    <div>
-                      <label className={`block text-xs font-bold uppercase tracking-wider mb-1 ${mutedStyle}`}>Full Name</label>
-                      <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Jane Doe"
-                        className={`w-full rounded-lg px-4 py-3 text-sm focus:outline-none transition-all ${inputStyle}`}
-                      />
-                    </div>
-                    <div>
-                      <label className={`block text-xs font-bold uppercase tracking-wider mb-1 ${mutedStyle}`}>Email Address</label>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="jane@example.com"
-                        className={`w-full rounded-lg px-4 py-3 text-sm focus:outline-none transition-all ${inputStyle}`}
-                      />
-                    </div>
-                    <div>
-                      <label className={`block text-xs font-bold uppercase tracking-wider mb-1 ${mutedStyle}`}>Password</label>
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className={`w-full rounded-lg px-4 py-3 text-sm focus:outline-none transition-all ${inputStyle}`}
-                      />
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      if (name && email && password) {
-                        setRegStep(2);
-                      } else {
-                        alert('Please fill out all credentials.');
-                      }
-                    }}
-                    className={`w-full py-3.5 rounded-lg text-xs font-extrabold tracking-widest uppercase transition-all shadow-md ${primaryBtn}`}
-                  >
-                    Next Step
-                  </button>
+            {/* Glowing Concentric Orbits Core representation */}
+            <div className="flex-1 flex flex-col justify-center items-center py-8 z-10">
+              <div className="relative w-48 h-48 flex items-center justify-center animate-breathing-orbit mb-6">
+                <div className="absolute w-44 h-44 rounded-full border border-white/15" />
+                <div className="absolute w-32 h-32 rounded-full border-2 border-white/30" />
+                <div className="absolute w-20 h-20 rounded-full flex items-center justify-center bg-white/10 border border-white/20">
+                  <Heart className="w-8 h-8 text-white fill-current animate-pulse" />
                 </div>
-              )}
+              </div>
+              <div className="text-center space-y-2 px-2">
+                <h2 className="text-lg font-black uppercase tracking-wider">The Cognitive Orbit</h2>
+                <p className="text-[10px] text-white/80 leading-normal uppercase tracking-wider max-w-xs font-semibold">
+                  Passive, on-device telemetry diagnostics designed to preserve cognitive wellness and respect absolute boundaries.
+                </p>
+              </div>
+            </div>
 
-              {regStep === 2 && (
-                /* Step 2: Demographics */
-                <div className="space-y-4">
-                  <div className="space-y-1">
-                    <h3 className={`text-sm font-extrabold ${textStyle}`}>Basic Demographics</h3>
-                    <p className={`text-[11px] ${mutedStyle}`}>Inputs will establish baselines for stress levels.</p>
+            {/* Footer Notice */}
+            <div className="text-center z-10 shrink-0">
+              <p className="text-[9px] text-white/60 tracking-widest uppercase font-bold">100% Encrypted & On-Device</p>
+            </div>
+          </div>
+
+          {/* Right Interactive Form Panel - 7 Columns */}
+          <div className="col-span-1 md:col-span-7 p-6 md:p-8 flex flex-col justify-center space-y-6">
+            
+            {/* Top mobile brand header (hidden on desktop) */}
+            <div className="text-center space-y-1.5 md:hidden">
+              <h1 className={`text-3xl font-black tracking-widest uppercase ${accentText}`}>COMPANION</h1>
+              <p className={`text-[9px] uppercase tracking-widest font-extrabold ${mutedStyle}`}>On-Device Cognitive Health Broker</p>
+            </div>
+
+            {/* Form navigation tabs */}
+            <div className={`flex border-b pb-1 ${borderStyle}`}>
+              <button
+                onClick={() => {
+                  setAuthMode('login');
+                  setRegStep(1);
+                }}
+                className={`w-1/2 pb-3 text-center text-xs tracking-widest font-extrabold border-b-2 transition-all ${
+                  authMode === 'login'
+                    ? (isDarkTheme ? 'border-[#8E9F8E] text-[#8E9F8E]' : 'border-[#3b533b] text-[#3b533b]')
+                    : 'border-transparent text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                LOGIN
+              </button>
+              <button
+                onClick={() => {
+                  setAuthMode('register');
+                  setRegStep(1);
+                }}
+                className={`w-1/2 pb-3 text-center text-xs tracking-widest font-extrabold border-b-2 transition-all ${
+                  authMode === 'register'
+                    ? (isDarkTheme ? 'border-[#8E9F8E] text-[#8E9F8E]' : 'border-[#3b533b] text-[#3b533b]')
+                    : 'border-transparent text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                REGISTER
+              </button>
+            </div>
+
+            {authMode === 'login' ? (
+              /* LOGIN SCREEN */
+              <form onSubmit={handleLoginSubmit} className="space-y-4">
+                <div className="space-y-1">
+                  <h3 className={`text-md font-extrabold ${textStyle}`}>Welcome Back</h3>
+                  <p className={`text-[11px] ${mutedStyle}`}>Sign in to resume tracking and diagnostics.</p>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <label className={`block text-[10px] font-extrabold uppercase tracking-wider mb-1 ${mutedStyle}`}>Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      placeholder="jane@example.com"
+                      className={`w-full rounded-xl px-4 py-3 text-xs focus:outline-none transition-all focus:ring-4 ${
+                        isDarkTheme ? 'focus:ring-[#8E9F8E]/10' : 'focus:ring-[#3b533b]/10'
+                      } ${inputStyle}`}
+                    />
                   </div>
-                  <div className="space-y-3">
-                    <div>
-                      <label className={`block text-xs font-bold uppercase tracking-wider mb-1 ${mutedStyle}`}>Age</label>
-                      <input
-                        type="number"
-                        value={age}
-                        onChange={(e) => setAge(e.target.value)}
-                        placeholder="25"
-                        className={`w-full rounded-lg px-4 py-3 text-sm focus:outline-none transition-all ${inputStyle}`}
-                      />
-                    </div>
+                  <div>
+                    <label className={`block text-[10px] font-extrabold uppercase tracking-wider mb-1 ${mutedStyle}`}>Password</label>
+                    <input
+                      type="password"
+                      required
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className={`w-full rounded-xl px-4 py-3 text-xs focus:outline-none transition-all focus:ring-4 ${
+                        isDarkTheme ? 'focus:ring-[#8E9F8E]/10' : 'focus:ring-[#3b533b]/10'
+                      } ${inputStyle}`}
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  className={`w-full py-3.5 rounded-xl text-xs font-extrabold tracking-widest uppercase transition-all shadow-lg ${primaryBtn}`}
+                >
+                  Authenticate
+                </button>
+              </form>
+            ) : (
+              /* SIGNUP ONBOARDING WIZARD */
+              <div className="space-y-6">
+                
+                {/* Visual Progress Stepper Dots */}
+                <div className="flex justify-between items-center py-2 px-4 rounded-xl border border-gray-500/10">
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Onboarding</span>
+                  <div className="flex items-center space-x-2">
+                    {[1, 2, 3].map((step) => (
+                      <React.Fragment key={step}>
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black transition-all ${
+                          regStep === step
+                            ? (isDarkTheme ? 'bg-[#8E9F8E] text-[#12161A]' : 'bg-[#3b533b] text-white ring-4 ring-[#3b533b]/15')
+                            : regStep > step
+                              ? (isDarkTheme ? 'bg-[#8E9F8E]/20 text-[#8E9F8E]' : 'bg-[#3b533b]/10 text-[#3b533b]')
+                              : 'bg-transparent text-gray-500 border border-gray-500/20'
+                        }`}>
+                          {step}
+                        </div>
+                        {step < 3 && <div className={`w-4 h-0.5 border-t border-dashed transition-all ${regStep > step ? 'border-[#3b533b]/40' : 'border-gray-500/20'}`} />}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
 
-                    {/* Gender Selection */}
-                    <div>
-                      <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${mutedStyle}`}>Gender</label>
-                      <div className="flex gap-2">
-                        {['Female', 'Male', 'Other'].map((g) => (
-                          <button
-                            key={g}
-                            type="button"
-                            onClick={() => setGender(g)}
-                            className={`flex-1 py-2.5 text-xs font-bold rounded-lg border transition-all ${
-                              gender === g
-                                ? (isDarkTheme ? 'bg-[#8E9F8E] text-[#12161A] border-[#8E9F8E]' : 'bg-[#10B981] text-white border-[#10B981]')
-                                : (isDarkTheme ? 'bg-[#12161A] text-gray-400 border-gray-800' : 'bg-white text-emerald-800/80 border-emerald-100 hover:border-emerald-200')
-                            }`}
-                          >
-                            {g}
-                          </button>
-                        ))}
+                {regStep === 1 && (
+                  /* Step 1: Account Creation */
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <h3 className={`text-sm font-extrabold ${textStyle}`}>Account Credentials</h3>
+                      <p className={`text-[11px] ${mutedStyle}`}>Identifiers built into localized cognitive encryption layers.</p>
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <label className={`block text-[10px] font-extrabold uppercase tracking-wider mb-1 ${mutedStyle}`}>Full Name</label>
+                        <input
+                          type="text"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          placeholder="Jane Doe"
+                          className={`w-full rounded-xl px-4 py-3 text-xs focus:outline-none transition-all focus:ring-4 ${
+                            isDarkTheme ? 'focus:ring-[#8E9F8E]/10' : 'focus:ring-[#3b533b]/10'
+                          } ${inputStyle}`}
+                        />
+                      </div>
+                      <div>
+                        <label className={`block text-[10px] font-extrabold uppercase tracking-wider mb-1 ${mutedStyle}`}>Email Address</label>
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="jane@example.com"
+                          className={`w-full rounded-xl px-4 py-3 text-xs focus:outline-none transition-all focus:ring-4 ${
+                            isDarkTheme ? 'focus:ring-[#8E9F8E]/10' : 'focus:ring-[#3b533b]/10'
+                          } ${inputStyle}`}
+                        />
+                      </div>
+                      <div>
+                        <label className={`block text-[10px] font-extrabold uppercase tracking-wider mb-1 ${mutedStyle}`}>Password</label>
+                        <input
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className={`w-full rounded-xl px-4 py-3 text-xs focus:outline-none transition-all focus:ring-4 ${
+                            isDarkTheme ? 'focus:ring-[#8E9F8E]/10' : 'focus:ring-[#3b533b]/10'
+                          } ${inputStyle}`}
+                        />
                       </div>
                     </div>
-
-                    {/* Work Status Selector */}
-                    <div>
-                      <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${mutedStyle}`}>Work Status</label>
-                      <div className={`space-y-2 p-3 rounded-lg border ${inputStyle}`}>
-                        {['Full-time', 'Freelancer', 'Student', 'Unemployed'].map((status) => (
-                          <label key={status} className="flex items-center space-x-3 cursor-pointer py-1.5">
-                            <input
-                              type="radio"
-                              name="work_status"
-                              checked={workStatus === status}
-                              onChange={() => setWorkStatus(status)}
-                              className={`w-4 h-4 ${isDarkTheme ? 'accent-[#8E9F8E]' : 'accent-[#10B981]'}`}
-                            />
-                            <span className="text-xs font-semibold leading-none">{status}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3 pt-2">
-                    <button
-                      onClick={() => setRegStep(1)}
-                      className="flex-1 bg-transparent hover:bg-black/10 border border-gray-500/20 text-gray-400 py-3.5 rounded-lg text-xs font-bold tracking-widest uppercase transition-all"
-                    >
-                      Back
-                    </button>
                     <button
                       onClick={() => {
-                        if (age) {
-                          setRegStep(3);
+                        if (name && email && password) {
+                          setRegStep(2);
                         } else {
-                          alert('Please enter your age.');
+                          alert('Please fill out all credentials.');
                         }
                       }}
-                      className={`flex-1 py-3.5 rounded-lg text-xs font-extrabold tracking-widest uppercase transition-all shadow-md ${primaryBtn}`}
+                      className={`w-full py-3.5 rounded-xl text-xs font-extrabold tracking-widest uppercase transition-all shadow-md ${primaryBtn}`}
                     >
-                      Next
+                      Next Step
                     </button>
                   </div>
-                </div>
-              )}
+                )}
 
-              {regStep === 3 && (
-                /* Step 3: Passive Telemetry Sync */
-                <div className="space-y-4">
-                  <div className="space-y-1">
-                    <h3 className={`text-sm font-extrabold ${textStyle}`}>Passive Telemetry Sync</h3>
-                    <p className={`text-[11px] ${mutedStyle}`}>Grant permissions to establish physical boundaries and data feeds.</p>
+                {regStep === 2 && (
+                  /* Step 2: Demographics */
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <h3 className={`text-sm font-extrabold ${textStyle}`}>Basic Demographics</h3>
+                      <p className={`text-[11px] ${mutedStyle}`}>Inputs establish relative biometric focus and stress parameters.</p>
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <label className={`block text-[10px] font-extrabold uppercase tracking-wider mb-1 ${mutedStyle}`}>Age</label>
+                        <input
+                          type="number"
+                          value={age}
+                          onChange={(e) => setAge(e.target.value)}
+                          placeholder="25"
+                          className={`w-full rounded-xl px-4 py-3 text-xs focus:outline-none transition-all focus:ring-4 ${
+                            isDarkTheme ? 'focus:ring-[#8E9F8E]/10' : 'focus:ring-[#3b533b]/10'
+                          } ${inputStyle}`}
+                        />
+                      </div>
+
+                      {/* Gender Selection */}
+                      <div>
+                        <label className={`block text-[10px] font-extrabold uppercase tracking-wider mb-2 ${mutedStyle}`}>Gender</label>
+                        <div className="flex gap-2">
+                          {['Female', 'Male', 'Other'].map((g) => (
+                            <button
+                              key={g}
+                              type="button"
+                              onClick={() => setGender(g)}
+                              className={`flex-1 py-2.5 text-xs font-bold rounded-lg border transition-all ${
+                                gender === g
+                                  ? (isDarkTheme ? 'bg-[#8E9F8E] text-[#12161A] border-[#8E9F8E]' : 'bg-[#3b533b] text-white border-[#3b533b]')
+                                  : (isDarkTheme ? 'bg-[#12161A] text-gray-400 border-gray-800' : 'bg-white text-[#3b533b]/80 border-[#3b533b]/20 hover:border-[#3b533b]/40')
+                              }`}
+                            >
+                              {g}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Work Status Selector */}
+                      <div>
+                        <label className={`block text-[10px] font-extrabold uppercase tracking-wider mb-2 ${mutedStyle}`}>Work Status</label>
+                        <div className={`space-y-2 p-3 rounded-lg border ${inputStyle}`}>
+                          {['Full-time', 'Freelancer', 'Student', 'Unemployed'].map((status) => (
+                            <label key={status} className="flex items-center space-x-3 cursor-pointer py-1.5">
+                              <input
+                                type="radio"
+                                name="work_status"
+                                checked={workStatus === status}
+                                onChange={() => setWorkStatus(status)}
+                                className={`w-4 h-4 ${isDarkTheme ? 'accent-[#8E9F8E]' : 'accent-[#3b533b]'}`}
+                              />
+                              <span className="text-xs font-semibold leading-none">{status}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        onClick={() => setRegStep(1)}
+                        className="flex-1 bg-transparent hover:bg-black/10 border border-gray-500/20 text-gray-400 py-3.5 rounded-xl text-xs font-bold tracking-widest uppercase transition-all"
+                      >
+                        Back
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (age) {
+                            setRegStep(3);
+                          } else {
+                            alert('Please enter your age.');
+                          }
+                        }}
+                        className={`flex-1 py-3.5 rounded-xl text-xs font-extrabold tracking-widest uppercase transition-all shadow-md ${primaryBtn}`}
+                      >
+                        Next
+                      </button>
+                    </div>
                   </div>
+                )}
 
-                  <div className={`space-y-3 p-4 rounded-lg border text-xs font-bold ${inputStyle}`}>
-                    <label className="flex items-center space-x-3 cursor-pointer py-2 border-b border-gray-500/10">
-                      <input
-                        type="checkbox"
-                        checked={calendarEnabled}
-                        onChange={(e) => setCalendarEnabled(e.target.checked)}
-                        className={`w-4 h-4 rounded ${isDarkTheme ? 'accent-[#8E9F8E]' : 'accent-[#10B981]'}`}
-                      />
-                      <span>Enable Google Calendar Sync</span>
-                    </label>
+                {regStep === 3 && (
+                  /* Step 3: Passive Telemetry Sync */
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <h3 className={`text-sm font-extrabold ${textStyle}`}>Passive Telemetry Sync</h3>
+                      <p className={`text-[11px] ${mutedStyle}`}>Grant secure permissions to link local work logs and wearable sync feeds.</p>
+                    </div>
 
-                    <label className="flex items-center space-x-3 cursor-pointer py-2">
-                      <input
-                        type="checkbox"
-                        checked={externalEnabled}
-                        onChange={(e) => setExternalEnabled(e.target.checked)}
-                        className={`w-4 h-4 rounded ${isDarkTheme ? 'accent-[#8E9F8E]' : 'accent-[#10B981]'}`}
-                      />
-                      <span>Authorize Health Connect sync</span>
-                    </label>
+                    <div className={`space-y-3 p-4 rounded-xl border text-xs font-bold ${inputStyle}`}>
+                      <label className="flex items-center space-x-3 cursor-pointer py-2 border-b border-gray-500/10">
+                        <input
+                          type="checkbox"
+                          checked={calendarEnabled}
+                          onChange={(e) => setCalendarEnabled(e.target.checked)}
+                          className={`w-4 h-4 rounded ${isDarkTheme ? 'accent-[#8E9F8E]' : 'accent-[#3b533b]'}`}
+                        />
+                        <span>Enable Google Calendar Sync</span>
+                      </label>
+
+                      <label className="flex items-center space-x-3 cursor-pointer py-2">
+                        <input
+                          type="checkbox"
+                          checked={externalEnabled}
+                          onChange={(e) => setExternalEnabled(e.target.checked)}
+                          className={`w-4 h-4 rounded ${isDarkTheme ? 'accent-[#8E9F8E]' : 'accent-[#3b533b]'}`}
+                        />
+                        <span>Authorize Health Connect sync</span>
+                      </label>
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        onClick={() => setRegStep(2)}
+                        className="flex-1 bg-transparent hover:bg-black/10 border border-gray-500/20 text-gray-400 py-3.5 rounded-xl text-xs font-bold tracking-widest uppercase transition-all"
+                      >
+                        Back
+                      </button>
+                      <button
+                        onClick={handleRegisterSubmit}
+                        className={`flex-1 py-3.5 rounded-xl text-xs font-extrabold tracking-widest uppercase transition-all shadow-lg ${primaryBtn}`}
+                      >
+                        Complete
+                      </button>
+                    </div>
                   </div>
+                )}
+              </div>
+            )}
+          </div>
 
-                  <div className="flex gap-3 pt-2">
-                    <button
-                      onClick={() => setRegStep(2)}
-                      className="flex-1 bg-transparent hover:bg-black/10 border border-gray-500/20 text-gray-400 py-3.5 rounded-lg text-xs font-bold tracking-widest uppercase transition-all"
-                    >
-                      Back
-                    </button>
-                    <button
-                      onClick={handleRegisterSubmit}
-                      className={`flex-1 py-3.5 rounded-lg text-xs font-extrabold tracking-widest uppercase transition-all shadow-lg ${primaryBtn}`}
-                    >
-                      Complete
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
     );
   }
 
-  // 4. Authenticated View: Side Drawer Panel & Navigation
+  // 4. Authenticated View: Persistent Sidebar & Dynamic Workspace
   return (
-    <div className={`min-h-screen transition-all ${bgStyle}`}>
+    <div className={`min-h-screen flex transition-all ${bgStyle}`}>
       
-      {/* Side Navigation Drawer Overlay */}
-      {isDrawerOpen && (
-        <div className="fixed inset-0 z-50 flex">
-          <div className="fixed inset-0 bg-black/60 transition-opacity" onClick={() => setIsDrawerOpen(false)} />
-          <div className={`relative flex w-full max-w-xs flex-col border-r p-6 text-white space-y-6 h-full shadow-2xl transition-all ${
-            isDarkTheme ? 'bg-[#1C2229] border-gray-800' : 'bg-white text-[#064E3B] border-emerald-100'
-          }`}>
-            
-            {/* Drawer profile Header */}
-            <div className="space-y-4 pt-4">
-              <div className="flex items-center space-x-3">
-                <div className={`w-14 h-14 rounded-full flex items-center justify-center font-extrabold text-xl shadow-md ${
-                  isDarkTheme ? 'bg-[#8E9F8E] text-[#12161A]' : 'bg-[#10B981] text-white'
-                }`}>
-                  {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
-                </div>
-                <div className="space-y-0.5">
-                  <h3 className={`text-sm font-extrabold tracking-wide ${isDarkTheme ? 'text-white' : 'text-[#064E3B]'}`}>{currentUser?.name || 'Jane Doe'}</h3>
-                  <p className={`text-xs ${isDarkTheme ? 'text-gray-400' : 'text-emerald-800/80'}`}>{currentUser?.email || 'jane@example.com'}</p>
-                </div>
-              </div>
-
-              {/* Sidebar Profile details card */}
-              <div className={`pt-4 space-y-2 text-xs border-t ${borderStyle}`}>
-                <div className="flex justify-between items-center">
-                  <span className={mutedStyle}>Age Cohort:</span>
-                  <span className={`font-bold ${isDarkTheme ? 'text-slate-200' : 'text-[#064E3B]'}`}>{currentUser?.profile?.age ?? 25} years</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className={mutedStyle}>Work Profile:</span>
-                  <span className={`font-bold uppercase tracking-wide ${isDarkTheme ? 'text-slate-200' : 'text-[#064E3B]'}`}>
-                    {currentUser?.profile?.work_status ?? 'FULL-TIME'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <hr className={borderStyle} />
-
-            {/* Added Side Bar Interactive Navigation! (Added as requested) */}
-            <div className="space-y-2">
-              <h4 className={`text-[10px] font-extrabold uppercase tracking-widest ${isDarkTheme ? 'text-gray-500' : 'text-emerald-700/60'}`}>Navigation</h4>
-              <div className="space-y-1">
-                {[
-                  { id: 'home', label: 'Dashboard', icon: Home },
-                  { id: 'analytics', label: 'Projections', icon: BarChart2 },
-                  { id: 'subscription', label: 'Subscription', icon: Sparkles },
-                  { id: 'settings', label: 'Privacy Center', icon: Settings }
-                ].map((item) => {
-                  const ItemIcon = item.icon;
-                  const isActive = currentTab === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        setCurrentTab(item.id);
-                        setIsDrawerOpen(false);
-                      }}
-                      className={`w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl text-xs font-extrabold tracking-wider uppercase transition-all ${
-                        isActive
-                          ? (isDarkTheme ? 'bg-[#8E9F8E]/10 text-[#8E9F8E]' : 'bg-[#10B981]/10 text-[#059669]')
-                          : (isDarkTheme ? 'text-gray-400 hover:bg-gray-800/30 hover:text-gray-200' : 'text-emerald-800/80 hover:bg-emerald-50 hover:text-[#064E3B]')
-                      }`}
-                    >
-                      <ItemIcon className="w-4.5 h-4.5" />
-                      <span>{item.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <hr className={borderStyle} />
-
-            {/* Client settings: Theme toggle */}
-            <div className="space-y-4 flex-1">
-              <h4 className={`text-[10px] font-extrabold uppercase tracking-widest ${isDarkTheme ? 'text-gray-500' : 'text-emerald-700/60'}`}>Preferences</h4>
-              <div className={`flex items-center justify-between px-4 py-3.5 rounded-xl border ${
-                isDarkTheme ? 'bg-[#12161A] border-gray-800/50' : 'bg-emerald-50/50 border-emerald-100'
-              }`}>
-                <div className="flex items-center space-x-2.5">
-                  {isDarkTheme ? <Moon className={`w-4 h-4 ${accentText}`} /> : <Sun className={`w-4 h-4 ${accentText}`} />}
-                  <span className={`text-xs font-bold uppercase tracking-wider ${isDarkTheme ? 'text-gray-300' : 'text-[#064E3B]'}`}>Dark Mode Theme</span>
-                </div>
-                {/* On/Off sliding toggle switch button */}
-                <button
-                  type="button"
-                  onClick={() => setIsDarkTheme(!isDarkTheme)}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    isDarkTheme 
-                      ? 'bg-[#8E9F8E]' 
-                      : 'bg-emerald-200'
-                  }`}
-                >
-                  <span
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      isDarkTheme ? 'translate-x-5' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setIsDrawerOpen(false)}
-              className={`w-full py-4 rounded-xl text-xs uppercase tracking-widest ${secondaryBtn}`}
-            >
-              Close Menu
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Main Navigation Scaffold Header TopBar */}
-      <nav className={`border-b px-6 py-4 flex items-center justify-between sticky top-0 z-30 ${
-        isDarkTheme ? 'border-gray-800 bg-[#1C2229] text-white' : 'border-emerald-100 bg-white text-[#064E3B] shadow-sm'
+      {/* Constant/Persistent Sidebar Navigation */}
+      <aside className={`w-44 md:w-52 flex flex-col h-screen sticky top-0 border-r p-4 space-y-4 shadow-sm overflow-hidden shrink-0 ${
+        isDarkTheme ? 'bg-[#1C2229] border-gray-800 text-white' : 'bg-white border-[#3b533b]/20 text-[#3b533b]'
       }`}>
-        <div className="flex items-center space-x-4">
+        
+        {/* User Identity Header (C logo deleted, User initial circle centered with name/email stacked on subsequent lines!) */}
+        <div className="flex flex-col items-center text-center pb-3 border-b border-gray-500/10 relative">
+          {/* Theme Toggle Button (Sun & Moon) at the absolute top-right */}
           <button
-            onClick={() => setIsDrawerOpen(true)}
-            className={`p-2 -ml-2 rounded-full transition-all ${isDarkTheme ? 'hover:bg-gray-800/40 text-[#8E9F8E]' : 'hover:bg-emerald-50 text-[#10B981]'}`}
+            onClick={() => setIsDarkTheme(!isDarkTheme)}
+            className={`absolute top-0 right-0 p-1 rounded-full border transition-all flex items-center justify-center shrink-0 ${
+              isDarkTheme 
+                ? 'bg-[#12161A] border-gray-800 text-[#8E9F8E] hover:bg-gray-800/40' 
+                : 'bg-[#d6dbd5] border-[#3b533b]/20 text-[#3b533b] hover:bg-[#3b533b]/10'
+            }`}
+            title={isDarkTheme ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
-            <Menu className="w-5 h-5" />
+            {isDarkTheme ? <Sun className="w-3 h-3" /> : <Moon className="w-3 h-3" />}
           </button>
-          <div className="flex items-center space-x-2">
-            <div className={`w-7 h-7 rounded-full flex items-center justify-center font-black text-sm ${
-              isDarkTheme ? 'bg-[#8E9F8E] text-[#12161A]' : 'bg-[#10B981] text-white shadow-sm'
-            }`}>C</div>
-            <span className={`text-sm font-black tracking-widest uppercase ${isDarkTheme ? 'text-[#8E9F8E]' : 'text-[#10B981]'}`}>COMPANION</span>
+
+          {/* Large Name Initial Circle */}
+          <div className={`w-14 h-14 rounded-full flex items-center justify-center font-black text-2xl shadow-md shrink-0 mb-2 mt-2 ${
+            isDarkTheme ? 'bg-[#8E9F8E] text-[#12161A]' : 'bg-[#3b533b] text-white'
+          }`}>
+            {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+          </div>
+
+          {/* Name and Email stacked vertically below */}
+          <div className="space-y-0.5 min-w-0 w-full">
+            <h3 className={`text-xs font-black tracking-wide truncate ${isDarkTheme ? 'text-white' : 'text-[#3b533b]'}`}>
+              {currentUser?.name || 'Jane Doe'}
+            </h3>
+            <p className={`text-[9px] truncate ${mutedStyle}`}>{currentUser?.email || 'jane@example.com'}</p>
           </div>
         </div>
 
-        {/* User profile tags */}
-        <div className="flex items-center space-x-4 text-xs font-semibold">
-          <span className={`hidden sm:inline uppercase ${isDarkTheme ? 'text-gray-300' : 'text-[#064E3B]'}`}>
-            {currentUser?.name || 'Loading user...'}
-          </span>
-          <button
-            onClick={handleLogout}
-            className={`p-2.5 rounded-full border transition-all flex items-center justify-center ${
-              isDarkTheme ? 'bg-[#12161A] border-gray-800 hover:border-red-800 text-gray-400 hover:text-red-400' : 'bg-emerald-50/50 border-emerald-100 hover:border-red-200 text-[#047857] hover:text-red-500'
-            }`}
-            title="Log Out"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
-      </nav>
-
-      {/* Main Dashboard body Container */}
-      <div className="max-w-6xl mx-auto p-6 md:p-8 space-y-8 pb-24">
-        
-        {/* Dynamic Navigation Top-Tabs layout */}
-        <div className="flex justify-between items-center">
-          <div className={`flex space-x-6 border-b w-full md:w-auto ${borderStyle}`}>
+        {/* Sidebar Interactive Navigation Tab Buttons with AI Chat Tab */}
+        <div className="space-y-1.5 shrink-0">
+          <h4 className={`text-[9px] font-extrabold uppercase tracking-widest ${isDarkTheme ? 'text-gray-500' : 'text-[#3b533b]/60'}`}>Navigation</h4>
+          <div className="space-y-1">
             {[
               { id: 'home', label: 'Dashboard', icon: Home },
               { id: 'analytics', label: 'Projections', icon: BarChart2 },
+              { id: 'chat', label: 'AI Chat', icon: Send },
               { id: 'subscription', label: 'Subscription', icon: Sparkles },
               { id: 'settings', label: 'Privacy Center', icon: Settings }
-            ].map((tab) => {
-              const TabIcon = tab.icon;
-              const isActive = currentTab === tab.id;
+            ].map((item) => {
+              const ItemIcon = item.icon;
+              const isActive = currentTab === item.id;
               return (
                 <button
-                  key={tab.id}
-                  onClick={() => setCurrentTab(tab.id)}
-                  className={`flex items-center space-x-2 pb-2.5 text-xs tracking-widest uppercase font-extrabold border-b-2 transition-all ${
+                  key={item.id}
+                  onClick={() => setCurrentTab(item.id)}
+                  className={`w-full flex items-center space-x-2 px-2.5 py-2 rounded-lg text-[10px] font-extrabold tracking-wider uppercase transition-all ${
                     isActive
-                      ? (isDarkTheme ? 'border-[#8E9F8E] text-[#8E9F8E]' : 'border-[#10B981] text-[#10B981]')
-                      : `border-transparent ${isDarkTheme ? 'text-gray-500 hover:text-slate-300' : 'text-emerald-800/50 hover:text-[#064E3B]'}`
+                      ? (isDarkTheme ? 'bg-[#8E9F8E]/10 text-[#8E9F8E]' : 'bg-[#3b533b]/10 text-[#3b533b]')
+                      : (isDarkTheme ? 'text-gray-400 hover:bg-gray-800/30 hover:text-gray-200' : 'text-[#3b533b]/80 hover:bg-[#3b533b]/10 hover:text-[#3b533b]')
                   }`}
                 >
-                  <TabIcon className="w-4 h-4" />
-                  <span>{tab.label}</span>
+                  <ItemIcon className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">{item.label}</span>
                 </button>
               );
             })}
           </div>
+        </div>
 
+        {/* Spacer to push logout to the absolute bottom */}
+        <div className="flex-1" />
+
+        {/* Logout Button at bottom-left */}
+        <div className="pt-2 border-t border-gray-500/10 flex justify-start shrink-0">
           <button
-            onClick={() => fetchDashboardData()}
-            disabled={isRefreshing}
-            className={`p-2.5 border rounded-full transition-all disabled:opacity-50 ${
-              isDarkTheme ? 'bg-[#1C2229] border-gray-800 text-[#8E9F8E] hover:bg-gray-800/40' : 'bg-white border-emerald-100 text-[#10B981] hover:bg-emerald-50 shadow-sm'
+            onClick={handleLogout}
+            className={`w-full flex items-center space-x-2 px-2.5 py-2 rounded-lg text-[10px] font-extrabold tracking-wider uppercase transition-all ${
+              isDarkTheme 
+                ? 'bg-[#12161A] border border-gray-800 hover:border-red-800 text-gray-400 hover:text-red-400' 
+                : 'bg-[#d6dbd5] border border-[#3b533b]/20 hover:border-red-300 text-[#3b533b] hover:text-red-600'
             }`}
-            title="Refresh Telemetry"
+            title="Log Out"
           >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <LogOut className="w-3.5 h-3.5 shrink-0" />
+            <span>Log Out</span>
           </button>
         </div>
+      </aside>
+
+      {/* Main Dashboard body Container (Right side) */}
+      <main className="flex-1 flex flex-col h-screen overflow-y-auto">
+        
+        {/* Top Header Row for refresh & active screen designation */}
+        <header className={`px-6 py-4 flex items-center justify-between border-b shrink-0 sticky top-0 z-20 ${
+          isDarkTheme ? 'border-gray-800 bg-[#12161A]' : 'border-[#3b533b]/20 bg-[#d6dbd5]'
+        }`}>
+          <div className="flex items-center space-x-4">
+            <h1 className="text-xs font-black uppercase tracking-widest">
+              {currentTab === 'home' ? 'Dashboard Overview' : currentTab === 'analytics' ? '7-Day Projections' : currentTab === 'subscription' ? 'Subscription Control' : 'Privacy Center Settings'}
+            </h1>
+          </div>
+          <div className="flex items-center space-x-3">
+            {/* Refresh Button */}
+            <button
+              onClick={() => fetchDashboardData()}
+              disabled={isRefreshing}
+              className={`p-2 border rounded-full transition-all disabled:opacity-50 ${
+                isDarkTheme ? 'bg-[#1C2229] border-gray-800 text-[#8E9F8E] hover:bg-gray-800/40' : 'bg-white border-[#3b533b]/20 text-[#3b533b] hover:bg-[#d6dbd5]'
+              }`}
+              title="Refresh Telemetry"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+        </header>
+
+        {/* Content View wrapper taking full layout width to eliminate unused margins */}
+        <div className="p-6 md:p-8 space-y-8 pb-24 flex-1 w-full max-w-full">
 
         {/* -----------------------------------------------------------
             TAB 1: HOME (WELLNESS ORBIT SCREEN)
@@ -1368,7 +1308,7 @@ function App() {
                   <p className={`text-[10px] ${mutedStyle}`}>Query your passive telemetry history.</p>
                 </div>
                 <button
-                  onClick={() => setShowChat(true)}
+                  onClick={handleFocusChat}
                   className={`px-4 py-2 rounded-lg text-xs font-extrabold uppercase tracking-wider ${primaryBtn}`}
                 >
                   Chat AI
@@ -1384,7 +1324,7 @@ function App() {
             TAB 2: ANALYTICS (FORECASTING SUITE SCREEN)
            ----------------------------------------------------------- */}
         {currentTab === 'analytics' && (
-          <div className="space-y-8 max-w-4xl mx-auto">
+          <div className="space-y-8 w-full">
             
             {/* Bezier line Chart block */}
             <div className={`${cardStyle} p-6 space-y-4`}>
@@ -1431,7 +1371,7 @@ function App() {
                 <p className={`text-xs mt-1 ${mutedStyle}`}>Converse with the passive companion AI for on-demand stress management.</p>
               </div>
               <button
-                onClick={() => setShowChat(true)}
+                onClick={handleFocusChat}
                 className={`px-6 py-3.5 rounded-xl text-xs uppercase tracking-widest shadow-md flex items-center space-x-2 ${primaryBtn}`}
               >
                 <Send className="w-4 h-4" />
@@ -1446,7 +1386,7 @@ function App() {
             TAB 2.5: SUBSCRIPTION (UPGRADE & PAYMENT CENTER)
            ----------------------------------------------------------- */}
         {currentTab === 'subscription' && (
-          <div className="space-y-8 max-w-2xl mx-auto">
+          <div className="space-y-8 w-full">
             
             {/* Active Subscription Summary */}
             <div className={`${cardStyle} p-8 space-y-6 text-center`}>
@@ -1459,7 +1399,7 @@ function App() {
               </div>
 
               <div className={`p-4 rounded-xl border max-w-sm mx-auto text-xs font-semibold ${
-                isDarkTheme ? 'bg-[#12161A] border-gray-800' : 'bg-emerald-50/30 border-emerald-100'
+                isDarkTheme ? 'bg-[#12161A] border-gray-800' : 'bg-[#3b533b]/10 border-[#3b533b]/20'
               }`}>
                 <div className="flex justify-between py-2 border-b border-gray-500/10">
                   <span className={mutedStyle}>Status:</span>
@@ -1475,7 +1415,7 @@ function App() {
                 )}
                 <div className="flex justify-between py-2">
                   <span className={mutedStyle}>Period End:</span>
-                  <span className={isDarkTheme ? 'text-gray-300' : 'text-[#064E3B]'}>
+                  <span className={isDarkTheme ? 'text-gray-300' : 'text-[#3b533b]'}>
                     {subscription?.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString() : 'Never'}
                   </span>
                 </div>
@@ -1499,7 +1439,7 @@ function App() {
               <button
                 onClick={handleChapaUpgrade}
                 disabled={isUpgrading}
-                className={`w-full py-4 rounded-xl text-xs uppercase tracking-widest shadow-md font-extrabold flex items-center justify-center space-x-2 ${
+                className={`w-full max-w-sm mx-auto py-4 rounded-xl text-xs uppercase tracking-widest shadow-md font-extrabold flex items-center justify-center space-x-2 ${
                   isDarkTheme ? 'bg-amber-500 hover:bg-amber-600 text-black' : 'bg-amber-600 hover:bg-amber-700 text-white'
                 } disabled:opacity-50`}
               >
@@ -1522,7 +1462,7 @@ function App() {
             TAB 3: SETTINGS (SETTINGS SCREEN / PRIVACY CENTER)
            ----------------------------------------------------------- */}
         {currentTab === 'settings' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
             
             {/* Left side settings card */}
             <div className="space-y-8">
@@ -1536,7 +1476,7 @@ function App() {
                 
                 <div className="flex items-center space-x-3.5 pb-4 border-b border-gray-500/10">
                   <div className={`w-12 h-14 rounded-xl flex items-center justify-center font-extrabold text-lg shadow-sm ${
-                    isDarkTheme ? 'bg-[#8E9F8E]/10 text-[#8E9F8E]' : 'bg-[#10B981]/10 text-[#059669]'
+                    isDarkTheme ? 'bg-[#8E9F8E]/10 text-[#8E9F8E]' : 'bg-[#3b533b]/10 text-[#3b533b]'
                   }`}>
                     <User className="w-5 h-5" />
                   </div>
@@ -1593,7 +1533,7 @@ function App() {
                         type="checkbox"
                         checked={ctrl.checked}
                         onChange={(e) => ctrl.setChecked(e.target.checked)}
-                        className={`w-4 h-4 cursor-pointer ${isDarkTheme ? 'accent-[#8E9F8E]' : 'accent-[#10B981]'}`}
+                        className={`w-4 h-4 cursor-pointer ${isDarkTheme ? 'accent-[#8E9F8E]' : 'accent-[#3b533b]'}`}
                       />
                     </div>
                   ))}
@@ -1602,58 +1542,9 @@ function App() {
 
             </div>
 
-            {/* Right side settings card (Ignored Apps Registry & Deletions) */}
+            {/* Right side settings card (Danger Zone Deletions) */}
             <div className="space-y-8">
               
-              {/* Ignored Apps Registry */}
-              <div className={`${cardStyle} p-6 space-y-4`}>
-                <div className="space-y-0.5">
-                  <span className={`text-[10px] font-bold uppercase tracking-widest ${mutedStyle}`}>Skip list Registry</span>
-                  <h3 className={`text-sm font-bold uppercase tracking-wider ${accentText}`}>Ignored Applications</h3>
-                </div>
-                <p className={`text-[11px] leading-normal font-semibold ${mutedStyle}`}>
-                  Define package names that are skipped from telemetry tracking (e.g. password managers, bank portals, or secure communicators).
-                </p>
-
-                {/* Ignored App Adding bar */}
-                <div className="flex gap-2 pt-2">
-                  <input
-                    type="text"
-                    value={newIgnoredApp}
-                    onChange={(e) => setNewIgnoredApp(e.target.value)}
-                    placeholder="e.g. com.bitwarden.android"
-                    className={`flex-1 rounded-lg px-3.5 py-2 text-xs focus:outline-none transition-all ${inputStyle}`}
-                  />
-                  <button
-                    onClick={addIgnoredApp}
-                    className={`px-4 rounded-lg text-xs font-extrabold uppercase tracking-wider ${primaryBtn}`}
-                  >
-                    Add
-                  </button>
-                </div>
-
-                {/* Ignored App scroll List */}
-                <div className="pt-2 max-h-40 overflow-y-auto space-y-2">
-                  {ignoredApps.map((app) => (
-                    <div
-                      key={app}
-                      className={`flex justify-between items-center px-3 py-2 rounded-lg border ${
-                        isDarkTheme ? 'bg-[#12161A] border-gray-800/80' : 'bg-emerald-50/20 border-emerald-100/50'
-                      }`}
-                    >
-                      <span className="text-xs font-semibold tracking-wide truncate pr-4">{app}</span>
-                      <button
-                        onClick={() => removeIgnoredApp(app)}
-                        className="text-red-400 hover:text-red-300 transition-all p-1"
-                        title="Remove app"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               {/* Data Retention delete handlers */}
               <div className={`${cardStyle} p-6 space-y-4`}>
                 <div className="space-y-0.5">
@@ -1682,7 +1573,81 @@ function App() {
           </div>
         )}
 
-      </div>
+        {/* -----------------------------------------------------------
+            TAB 4: AI COMPANION CHAT WORKSPACE
+           ----------------------------------------------------------- */}
+        {currentTab === 'chat' && (
+          <div className="flex-1 flex flex-col min-h-0 bg-transparent h-[calc(100vh-140px)] w-full max-w-full">
+            {/* Message logs */}
+            <div className="flex-1 overflow-y-auto pr-1 space-y-4 min-h-0 custom-sidebar-scrollbar mb-4">
+              {chatMessages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center p-8 text-gray-500 space-y-4">
+                  <div className={`p-4 rounded-full border ${cardStyle}`}>
+                    <Sparkles className={`w-8 h-8 ${accentText}`} />
+                  </div>
+                  <p className={`text-sm max-w-sm leading-relaxed font-semibold ${mutedStyle}`}>
+                    Ask the companion details about your cognitive focus patterns, steps deficits, sleep offsets, or request a coping strategy.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md w-full pt-4">
+                    <button
+                      onClick={() => setChatInput("Why was my focus score lower today?")}
+                      className={`${cardStyle} p-4 rounded-xl text-left text-xs font-bold hover:border-[#3b533b] transition-all`}
+                    >
+                      "Why was my focus score lower today?"
+                    </button>
+                    <button
+                      onClick={() => setChatInput("Check my 7-day burnout risk probability")}
+                      className={`${cardStyle} p-4 rounded-xl text-left text-xs font-bold hover:border-[#3b533b] transition-all`}
+                    >
+                      "Check my 7-day burnout risk probability"
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                chatMessages.map((msg, i) => {
+                  const isUser = msg.sender === 'user';
+                  return (
+                    <div key={i} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+                      <div
+                        className={`max-w-[80%] rounded-2xl p-4 text-xs font-medium shadow-sm leading-relaxed ${
+                          isUser
+                            ? (isDarkTheme ? 'bg-[#8E9F8E] text-[#12161A] rounded-tr-none' : 'bg-[#3b533b] text-white rounded-tr-none shadow-md')
+                            : (isDarkTheme ? 'bg-[#1C2229] border border-gray-800 text-gray-300 rounded-tl-none' : 'bg-white border border-[#3b533b]/20 text-[#3b533b] rounded-tl-none shadow-sm')
+                        }`}
+                      >
+                        {msg.text}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+              <div ref={chatEndRef} />
+            </div>
+
+            {/* Chat input - minimized and centered in the middle */}
+            <form onSubmit={handleChatSubmit} className="pt-4 border-t border-gray-500/10 shrink-0 flex justify-center">
+              <div className="flex w-full max-w-lg space-x-3 items-center px-4">
+                <input
+                  ref={chatInputRef}
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder="e.g. why was my focus score lower today?"
+                  className={`flex-1 rounded-full px-4 py-2.5 text-xs focus:outline-none transition-all shadow-inner ${inputStyle}`}
+                />
+                <button
+                  type="submit"
+                  className={`${primaryBtn} p-2.5 rounded-full shadow-md transition-all flex items-center justify-center shrink-0`}
+                >
+                  <Send className="w-4 h-4 fill-current" />
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        </div>
+      </main>
     </div>
   );
 }
